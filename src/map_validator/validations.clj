@@ -1,18 +1,14 @@
 (ns map-validator.validations)
 
-(defn- first-match [m]
-  (if (coll? m) (first m) m))
-
-(defn- false-result [error-message]
-  {:result false :error-message error-message}
-  )
-
 (def default-presence-error-message "is blank")
 (defn is-present? [attrs attr args]
   (if (not (nil? (attr attrs)))
     {:result true}
-    (false-result default-presence-error-message)
+    {:result false :error-message default-presence-error-message}
     ))
+
+(defn- first-match [m]
+  (if (coll? m) (first m) m))
 
 (def default-format-error-message "has the incorrect format")
 (defn is-formatted? [attrs attr args]
@@ -21,14 +17,14 @@
           match (if (nil? value) value (first-match (re-matches pattern value)))]
       (if (and (not (nil? match)) (= match value))
         {:result true}
-        (false-result default-format-error-message)))
+        {:result false :error-message default-format-error-message}))
     (throw (Exception. "Pattern to match with not given."))))
 
 (defn- call-format [attrs attr args pattern default-message]
   (let [result (is-formatted? attrs attr (merge args {:pattern pattern}))]
-    (if (:error-message result)
-      (merge result {:error-message default-message})
-      result)))
+    (if (:result result)
+      result
+      (merge result {:error-message default-message}))))
 
 (def default-email-error-message "is not a valid email")
 ; RFC 2822
@@ -40,3 +36,8 @@
 (def phone-number-pattern #"^(\s*)(\+?)(\s*[-|\.|\/]?\s*)(\d{0,3})(\s*[-|\.|\/]?\s*)(\d{1,3}|\((\d{1,3})\))(\s*[-|\.|\/]?\s*)(\d{3})(\s*[-|\.|\/]?\s*)(\d{4})(\s*)$")
 (defn is-phone-number? [attrs attr args]
   (call-format attrs attr args phone-number-pattern default-phone-number-error-message))
+
+(defn get-validation [validatior-key]
+  (if-let [fn (ns-resolve 'map-validator.validations (symbol (name validatior-key)))]
+    fn
+    (throw (Exception. (str "Could not locate the validator: " (name validatior-key))))))

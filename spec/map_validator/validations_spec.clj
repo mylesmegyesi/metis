@@ -88,4 +88,13 @@
 
     )
 
+  (context "get validation"
+    (it "takes a keyword and returns the built-in validator"
+      (should= (ns-resolve 'map-validator.validations 'is-present?) (get-validation :is-present?)))
+
+    (it "throws if the validation is not found"
+      (should-throw Exception (get-validation :some-nonexistant-validation)))
+
+    )
+
   )
