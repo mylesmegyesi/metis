@@ -12,22 +12,24 @@
     (throw (Exception. "Validator not given."))))
 
 (defn is-present [attr {:keys [message] :or {message "is not present"}}]
-  (cond
-    (string? attr) (if (blank? attr) message)
-    (coll? attr) (if (empty? attr) message)
-    :else (if (nil? attr) message)))
+  (with attr {:message message :validator (fn [attr]
+    (not (cond
+      (string? attr) (blank? attr)
+      (coll? attr) (empty? attr)
+      :else (nil? attr)))
+    )}))
 
 (defn- first-match [m]
   (if (coll? m) (first m) m))
 
 (defn is-formatted [attr {:keys [pattern message] :or {message "has the incorrect format"}}]
-  (if pattern
-    (if-let [message (is-present attr {:message message})]
-      message
+  (with attr {:message message :validator (fn [attr]
+    (when (nil? pattern)
+      (throw (Exception. "Pattern to match with not given.")))
+    (when (not (nil? attr))
       (let [match (first-match (re-matches pattern attr))]
-        (when (or (nil? match) (not= match attr))
-          message)))
-    (throw (Exception. "Pattern to match with not given."))))
+        (= match attr)))
+    )}))
 
 (defn is-email [email {:keys [message] :or {message "is not a valid email"}}]
   (is-formatted email {:message message :pattern email-pattern}))
