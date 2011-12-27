@@ -1,7 +1,7 @@
-(ns map-validator.core-spec
+(ns validator.core-spec
   (:use [speclj.core]
-    [map-validator.core :only [validate validate-attr]]
-    [map-validator.validations :only [with] :rename {with my-with}]))
+    [validator.core :only [validate validate-attr]]
+    [validator.validations :only [with] :rename {with my-with}]))
 
 (def mock-with-called-count (atom 0))
 (defn mock-with [attr {}]

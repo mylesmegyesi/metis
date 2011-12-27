@@ -1,4 +1,4 @@
-# map-validator
+# validator
 
 FIXME: write description
 

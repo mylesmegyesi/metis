@@ -1,4 +1,4 @@
-(ns map-validator.validations
+(ns validator.validations
   (:use [clojure.string :only [blank?]]))
 
 ; RFC 2822
@@ -16,8 +16,7 @@
     (not (cond
       (string? attr) (blank? attr)
       (coll? attr) (empty? attr)
-      :else (nil? attr)))
-    )}))
+      :else (nil? attr))))}))
 
 (defn- first-match [m]
   (if (coll? m) (first m) m))
@@ -28,8 +27,7 @@
       (throw (Exception. "Pattern to match with not given.")))
     (when (not (nil? attr))
       (let [match (first-match (re-matches pattern attr))]
-        (= match attr)))
-    )}))
+        (= match attr))))}))
 
 (defn is-email [email {:keys [message] :or {message "is not a valid email"}}]
   (is-formatted email {:message message :pattern email-pattern}))
@@ -38,7 +36,7 @@
   (is-formatted phone-number {:message message :pattern phone-number-pattern}))
 
 (defn get-validation [validatior-key]
-  (if-let [fn (ns-resolve 'map-validator.validations (symbol (name validatior-key)))]
+  (if-let [fn (ns-resolve 'validator.validations (symbol (name validatior-key)))]
     fn
     (throw (Exception. (str "Could not locate the validator: " (name validatior-key))))))
 

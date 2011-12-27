@@ -1,6 +1,6 @@
-(ns map-validator.validations-spec
+(ns validator.validations-spec
   (:use [speclj.core]
-    [map-validator.validations :rename {with my-with}]))
+    [validator.validations :rename {with my-with}]))
 
 (describe "validations"
 
@@ -102,7 +102,7 @@
 
   (context "get validation"
     (it "takes a keyword and returns the built-in validator"
-      (should= (ns-resolve 'map-validator.validations 'is-present) (get-validation :is-present)))
+      (should= (ns-resolve 'validator.validations 'is-present) (get-validation :is-present)))
 
     (it "throws if the validation is not found"
       (should-throw Exception (get-validation :some-nonexistant-validation)))
