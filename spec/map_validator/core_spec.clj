@@ -1,31 +1,18 @@
 (ns map-validator.core-spec
   (:use [speclj.core]
-    [map-validator.core :only [validate build-message stringify-keyword]]))
+    [map-validator.core :only [validate-attr]]))
 
 (describe "map validator"
 
-  (context "stringify keyword"
-
-    (it "gives correct error message with dash in the keyword"
-      (should= "First name" (stringify-keyword :first-name)))
-
-    (it "gives correct error message with underscore in the keyword"
-      (should= "First name" (stringify-keyword :first_name)))
-
-    )
-
-  (context "validate"
+  (context "validate attr"
     (it "runs the validation"
-      (should-not= nil (validate {} :key :is-present {})))
+      (should-not= nil (validate-attr nil :is-present))
+      (should= nil (validate-attr "spmething" :is-present))
+      (should-not= nil (validate-attr nil :is-present {})))
 
     (it "uses the given error message"
       (let [message "other message"]
-        (should= (build-message (stringify-keyword :key) message) (validate {} :key :is-present {:message message}))))
-
-    (it "uses the given key name"
-      (let [message "other message"
-            key-name "other key"]
-        (should= (build-message key-name message) (validate {} :key :is-present {:message message :key-name key-name}))))
+        (should= message (validate-attr nil :is-present {:message message}))))
 
     )
 
