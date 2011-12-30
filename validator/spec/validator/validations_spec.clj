@@ -11,10 +11,6 @@
     (it "returns an error message if the validation fails"
       (should-not= nil (my-with nil {:validator (fn [attr] false)})))
 
-    (it "returns the customer error message if the validation fails"
-      (let [message "some error message"]
-        (should= message (my-with nil {:validator (fn [attr] false) :message message}))))
-
     (it "throws an exception if validator is not given"
       (let [message "some error message"]
         (should-throw Exception (my-with nil {}))))
@@ -33,10 +29,6 @@
 
     (it "fails when attribute is an empty collection"
       (should-not= nil (is-present [] {})))
-
-    (it "returns the customer error message if the validation fails"
-      (let [message "some error message"]
-        (should= message (is-present nil {:message message}))))
 
     )
 
