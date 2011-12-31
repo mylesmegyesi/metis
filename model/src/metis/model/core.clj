@@ -1,4 +1,4 @@
-(ns model.core
+(ns metis.model.core
   (:use [clojure.string :only [lower-case]]
         [validator.core :only [defvalidator]]))
 
@@ -23,7 +23,7 @@
     `(defvalidator ~validator-name ~@params)))
 
 (defn- evaluate-option [option model-name params]
-  (let [option-fn (ns-resolve 'model.core (keyword->symbol option))]
+  (let [option-fn (ns-resolve 'metis.model.core (keyword->symbol option))]
     (when option-fn
       (option-fn model-name params))))
 

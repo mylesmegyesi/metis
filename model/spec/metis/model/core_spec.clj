@@ -1,6 +1,6 @@
-(ns model.core-spec
+(ns metis.model.core-spec
   (:use [speclj.core]
-    [model.core :only [defmodel]]))
+    [metis.model.core :only [defmodel]]))
 
 (defmodel Customer
   (:attributes
