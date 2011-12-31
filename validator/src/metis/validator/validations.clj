@@ -1,4 +1,4 @@
-(ns validator.validations
+(ns metis.validator.validations
   (:use [clojure.string :only [blank?]]))
 
 ; RFC 2822
@@ -44,7 +44,7 @@
     "is not a valid phone number"))
 
 (defn get-validation [validatior-key]
-  (if-let [fn (ns-resolve 'validator.validations (symbol (name validatior-key)))]
+  (if-let [fn (ns-resolve 'metis.validator.validations (symbol (name validatior-key)))]
     fn
     (throw (Exception. (str "Could not locate the validator: " (name validatior-key))))))
 

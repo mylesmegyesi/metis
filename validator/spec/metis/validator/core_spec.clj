@@ -1,7 +1,7 @@
-(ns validator.core-spec
+(ns metis.validator.core-spec
   (:use [speclj.core]
-    [validator.core :only [validate validate-attr defvalidator]]
-    [validator.validations :only [is-present with] :rename {with my-with}]))
+    [metis.validator.core :only [validate validate-attr defvalidator]]
+    [metis.validator.validations :only [is-present with] :rename {with my-with}]))
 
 (def mock-called-count (atom 0))
 (defn mock [attr {}]
