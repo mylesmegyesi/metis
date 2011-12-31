@@ -15,7 +15,7 @@
       (defn- ~ctor-helper ~attrs
         (new ~record-name ~@attrs))
       (defn ~constructor-name [attrs#]
-        (apply ~ctor-helper (map (fn [attr#] (attr# attrs#)) [~@params]))))))
+        (apply ~ctor-helper (map #(% attrs#) [~@params]))))))
 
 (defn- validations [model-name params]
   (let [validator-name (symbol (lower-case (str model-name "-errors")))]
