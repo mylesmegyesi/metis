@@ -1,6 +1,6 @@
 (ns metis.model.core
   (:use [clojure.string :only [lower-case]]
-        [validator.core :only [defvalidator]]))
+        [metis.validator.core :only [defvalidator]]))
 
 (defn- keyword->symbol [key]
   (symbol (name key)))
