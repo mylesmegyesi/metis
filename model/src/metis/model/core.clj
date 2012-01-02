@@ -6,7 +6,6 @@
   (symbol (name key)))
 
 (defn- attributes [model-name params]
-  (prn params)
   (let [record-name (symbol model-name)
         constructor-name (symbol (lower-case (str "new-" model-name)))
         attrs (vec (map keyword->symbol params))

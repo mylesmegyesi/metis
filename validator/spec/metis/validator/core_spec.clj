@@ -1,7 +1,7 @@
 (ns metis.validator.core-spec
   (:use [speclj.core]
     [metis.validator.core :only [validate validate-attr defvalidator]]
-    [metis.validator.validations :only [is-present with] :rename {with my-with}]))
+    [metis.validator.validations :only [is-present is-email with] :rename {with my-with}]))
 
 (def mock-called-count (atom 0))
 (defn mock [attr {}]
@@ -26,8 +26,7 @@
     (it "uses the given error message"
       (let [message "other message"]
         (should= message (validate-attr nil :is-present {:message message}))))
-
-    )
+  )
 
   (context "validate"
     (after
@@ -61,14 +60,13 @@
                 [:foo :with {:validator (fn [attr] true)}])]
           (should= 1 @mock-called-count)
           (should= 1 @mock2-called-count))))
-
-    )
+  )
 
   (context "defvalidator"
     (it "defines a validator"
       (should (generic-record-validator {:first-name "Guy" :email "snap.into@slim.jim"}))
-      (should (contains? (generic-record-validator {:first-name "Guy" :email "snap.into@sli"}) :email)))
-
+      (should (contains? (generic-record-validator {:first-name "Guy" :email "snap.into@sli"}) :email))
+      (should (contains? (generic-record-validator {:email "snap.into@slim.jim"}) :first-name))
     )
-
   )
+)
