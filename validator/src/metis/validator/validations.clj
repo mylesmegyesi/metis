@@ -18,7 +18,7 @@
       "must be accepted")))
 
 (defn confirmation [record attr args]
-  (let [{:keys [confirm] :or {confirm (keyword (str (keyword->str attr) "-confirmation"))}}  args
+  (let [{:keys [confirm] :or {confirm (keyword (str (keyword->str attr) "-confirmation"))}} args
         attr-value (attr record)
         confirm-value (confirm record)]
     (when (not= attr-value confirm-value)
@@ -47,7 +47,11 @@
               not-odd (str "is not odd")
               not-even (str "is not even")
               not-in (str "is not included in the list")}} args
-        n-int (str->int attr-value)
+        n-int
+        (cond
+          (string? attr-value) (str->int attr-value)
+          (integer? attr-value) attr-value
+          :else nil)
         n-float
         (cond
           (string? attr-value) (str->float attr-value)
