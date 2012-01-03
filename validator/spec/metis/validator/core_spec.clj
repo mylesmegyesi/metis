@@ -1,21 +1,8 @@
 (ns metis.validator.core-spec
   (:use [speclj.core]
-<<<<<<< HEAD
     [clojure.repl :only [source]]
     [metis.validator.core]
     [metis.validator.validations :only [presence with] :rename {with my-with}]))
-=======
-    [metis.validator.core :only [validate validate-attr defvalidator]]
-    [metis.validator.validations :only [is-present is-email with] :rename {with my-with}]))
-
-(def mock-called-count (atom 0))
-(defn mock [attr {}]
-  (swap! mock-called-count #(inc %)))
-
-(def mock2-called-count (atom 0))
-(defn mock2 [attr {}]
-  (swap! mock2-called-count #(inc %)))
->>>>>>> 49ba4c15338c8cce05a8f04ef38c69ec89b2e67a
 
 (defvalidator generic-record-validator
   (validate [:first-name :zipcode] [:presence {:allow-blank true}]))
@@ -33,7 +20,6 @@
 
     (it "uses the given error message"
       (let [message "other message"]
-<<<<<<< HEAD
         (should= message (validate-attr {:foo nil} :foo :presence {:message message}))))
 
     (it "allows nil"
@@ -71,10 +57,6 @@
     (it "given multiple validations in a collection it returns a collection of validations with args"
       (should= [[:foo {:thing "here"}] [:bar {}] [:baz {:one "two"}]] (normalize-validations [:foo {:thing "here"} :bar :baz {:one "two"}])))
     )
-=======
-        (should= message (validate-attr nil :is-present {:message message}))))
-  )
->>>>>>> 49ba4c15338c8cce05a8f04ef38c69ec89b2e67a
 
   (context "validate"
     (it "accepts an attribute to validate and a validation as keywords"
@@ -108,7 +90,6 @@
 
     (it "returns a map with a collection of errors"
       (let [message "error"
-<<<<<<< HEAD
             errors (validate {:foo ""} :foo [:presence {:message message}])]
         (should= {:foo [message]} errors)))
 
@@ -140,32 +121,5 @@
       (should (:first-name (generic-record-validator {:first-name nil :zipcode "12345"})))
       (should= {} (GenericRecordValidator {:first-name "Guy" :zipcode ""}))
       (should (:first-name (GenericRecordValidator {:first-name nil :zipcode "12345"}))))
-
-=======
-            errors (validate {:foo "" :bar "bar" :baz "here"}
-          [:foo :is-present {:message message}]
-          [:bar :with {:validator (fn [attr] false) :message message}]
-          [:baz :is-present])]
-        (should= {:foo [message] :bar [message]} errors)))
-
-    (it "runs validations for a key after it has already failed"
-      (binding [is-present mock
-                my-with mock2]
-        (let [message "error"
-              errors
-              (validate {:foo ""}
-                [:foo :is-present {:message message}]
-                [:foo :with {:validator (fn [attr] true)}])]
-          (should= 1 @mock-called-count)
-          (should= 1 @mock2-called-count))))
-  )
-
-  (context "defvalidator"
-    (it "defines a validator"
-      (should (generic-record-validator {:first-name "Guy" :email "snap.into@slim.jim"}))
-      (should (contains? (generic-record-validator {:first-name "Guy" :email "snap.into@sli"}) :email))
-      (should (contains? (generic-record-validator {:email "snap.into@slim.jim"}) :first-name))
->>>>>>> 49ba4c15338c8cce05a8f04ef38c69ec89b2e67a
     )
   )
-)

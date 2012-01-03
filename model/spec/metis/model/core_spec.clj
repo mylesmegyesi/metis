@@ -7,8 +7,8 @@
   (:attributes
     :first-name :last-name)
   (:validations
-    (validate :first-name :is-present {:message "Testing"})
-    (validate :last-name :is-present)))
+    (validate :first-name :presence {:message "Testing"})
+    (validate :last-name :presence)))
 
 (describe "model"
 
