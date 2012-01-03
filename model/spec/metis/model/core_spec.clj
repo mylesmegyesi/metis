@@ -7,17 +7,27 @@
   (:attributes
     :first-name :last-name)
   (:validations
-    (validate :first-name :presence)
-    (validate :last-name :presence)))
+    (validate :first-name :is-present {:message "Testing"})
+    (validate :last-name :is-present)))
 
 (describe "model"
 
-  (it "has the given attributes"
-    (should= "Jimmy" (:first-name (new-customer {:first-name "Jimmy"})))
-    (should-not= "Jimmy" (:customer-name (new-customer {:customer-name "Jimmy"}))))
+  (describe "attributes"
 
-  (it "has a validator"
-    (should= {} (customer-errors {:first-name "Jimmy" :last-name "John's"}))
-    (should= 2 (count (customer-errors {}))))
+    (it "has a validator"
+      (should= {} (customer-errors {:first-name "Jimmy" :last-name "John's"}))
+      (should= 2 (count (customer-errors {}))))
 
+    (it "does not accept attributes not given"
+      (should-not= "Jimmy" (:customer-name (new-customer {:customer-name "Jimmy"}))))
+    )
+
+  (describe "validator"
+
+    (it "has a validator"
+      (should (contains? (customer-errors (new-customer {:first-name "Jimmy"})) :last-name)))
+
+    (it "has a validation failure message"
+      (should= {:first-name ["Testing"]} (customer-errors (new-customer {:last-name "Dave"}))))
+    )
   )
