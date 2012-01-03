@@ -1,13 +1,14 @@
 (ns metis.model.core-spec
   (:use [speclj.core]
-    [metis.model.core :only [defmodel]]))
+    [metis.model.core]
+    [metis.validator.core]))
 
 (defmodel Customer
   (:attributes
     :first-name :last-name)
   (:validations
-    (:first-name :is-present)
-    (:last-name :is-present)))
+    (validate :first-name :presence)
+    (validate :last-name :presence)))
 
 (describe "model"
 
@@ -17,6 +18,6 @@
 
   (it "has a validator"
     (should= {} (customer-errors {:first-name "Jimmy" :last-name "John's"}))
-    (should= {} (customer-errors {:customer-name "Jimmy"})))
+    (should= 2 (count (customer-errors {}))))
 
   )

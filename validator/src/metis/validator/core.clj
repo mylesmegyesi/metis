@@ -1,32 +1,70 @@
 (ns metis.validator.core
-  (:use [metis.validator.validations :only [get-validation]]))
+  (:use
+    [metis.validator.validations :only [get-validation]]
+    [metis.validator.util :only [blank? spear-case]]))
 
-(defn validate-attr
-  ([attr validator] (validate-attr attr validator {}))
-  ([attr validator args]
-    (let [{:keys [message] :or {message "is invalid"}} args
-          error ((get-validation validator) attr args)]
-      (when error
-        message))))
-
-(defn- ensure-attr-vector [errors attr]
+(defn ensure-attr-vector [errors attr]
   (if (nil? (attr errors))
     (assoc errors attr [])
     errors))
 
-(defn- add-error [errors attr message]
+(defn add-error [errors attr message]
   (let [errors (ensure-attr-vector errors attr)]
     (update-in errors [attr] #(conj % message))))
 
-(defn validate [record & validations]
-  (loop [[field & more] validations errors {}]
-    (if (nil? field)
-      errors
-      (let [[attr & args] field
-            message (apply validate-attr (attr record) args)
-            errors (if message (add-error errors attr message) errors)]
-        (recur more errors)))))
+(defn validate-attr [record attr validator args]
+  (let [{:keys [message allow-nil allow-blank] :or {allow-nil false allow-blank false}} args
+        attr-value (attr record)
+        error (if (or (and allow-nil (nil? attr-value)) (and allow-blank (blank? attr-value))) nil ((get-validation validator) record attr args))]
+    (when error
+      (if message message error))))
+
+(defn normalize-attributes [attributes]
+  (cond
+    (keyword? attributes) [attributes]
+    (coll? attributes) attributes))
+
+(defn normalize-validations [validations]
+  (let [validations (if (keyword? validations) [validations] validations)]
+    (loop [validations validations ret []]
+      (if (empty? validations)
+        ret
+        (let [cur (first validations)
+              next (second validations)]
+          (cond
+            (map? next)
+            (recur (rest (rest validations)) (conj ret [cur next]))
+            (keyword? next)
+            (recur (rest validations) (conj ret [cur {}]))
+            (nil? next)
+            (recur [] (conj ret [cur {}]))))))))
+
+(defn merge-errors [& errors]
+  (apply merge-with #(vec (concat %1 %2)) errors))
+
+(defn remove-empty-errors [errors]
+  (select-keys errors (for [attr-errors errors :when (not (or (nil? (first (val attr-errors))) (empty? (val attr-errors))))] (key attr-errors))))
+
+(defn- validate-normalized [record attrs validations]
+  (apply merge-errors
+    (map remove-empty-errors
+      (for [attr attrs [validation args] validations]
+        {attr [(validate-attr record attr validation args)]}))))
+
+(defn validate
+  ([record attrs validation args]
+    (validate-normalized record (normalize-attributes attrs) (normalize-validations [validation args])))
+  ([record attrs validations]
+    (validate-normalized record (normalize-attributes attrs) (normalize-validations validations))))
+
+(defn- get-validator-fn [record fn-name & args]
+  `(~fn-name ~record ~@args))
+
+(defmacro merge-validations [record & validations]
+  (let [validations (map #(apply get-validator-fn record %) validations)]
+    `(apply merge-errors [~@validations])))
 
 (defmacro defvalidator [validator-name & validations]
   `(defn ~validator-name [record#]
-    (validate record# ~@validations)))
+    (merge-validations record# ~@validations)))
+
