@@ -40,16 +40,15 @@
             (recur [] (conj ret [cur {}]))))))))
 
 (defn merge-errors [& errors]
-  (apply merge-with #(vec (concat %1 %2)) errors))
-
-(defn remove-empty-errors [errors]
-  (select-keys errors (for [attr-errors errors :when (not (or (nil? (first (val attr-errors))) (empty? (val attr-errors))))] (key attr-errors))))
+  (apply merge-with #(vec (concat %1 %2)) {} errors))
 
 (defn- validate-normalized [record attrs validations]
   (apply merge-errors
-    (map remove-empty-errors
+    (filter #(not (nil? %))
       (for [attr attrs [validation args] validations]
-        {attr [(validate-attr record attr validation args)]}))))
+        (let [message (validate-attr record attr validation args)]
+          (when message
+            {attr [message]}))))))
 
 (defn validate
   ([record attrs validation args]

@@ -107,14 +107,6 @@
 
     )
 
-  (context "remove empty errors"
-    (it "removes keys that have no errors"
-      (should= {} (remove-empty-errors {:first-name []})))
-    (it "keeps keys that have errors"
-      (should= {:first-name ["invalid"]} (remove-empty-errors {:first-name ["invalid"]})))
-
-    )
-
   (context "defvalidator"
     (it "defines a validator"
       (should= {} (generic-record-validator {:first-name "Guy" :zipcode ""}))
