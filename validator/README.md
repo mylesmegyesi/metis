@@ -34,6 +34,51 @@ Maven:
 
 ## Built-in Validators
 
+## with
+
+```clojure
+(defvalidator location-validator
+    (validate :gps :with {:message "bad gps!" :validator (fn [attrs] (not (or (nil? (:latitude attrs)) (nil? (:longitude attrs)))))}))
+
+(location-validator {:latitude "" :longitude nil})
+; {:gps ["bad gps!"]}
+
+(location-validator {:latitude "90" :longitude "20"})
+; {}
+```
+
+### Options:
+
+* `:validator`  The validator to run against the record. This function should accept a map and return a boolean. Default `nil`.
+
+### Default error message:
+
+"is invalid"
+
+## presence
+
+```clojure
+(defvalidator user-validator
+    (validate :name :presence))
+
+(user-validator {:name nil})
+; {:name ["is not present"]}
+
+(user-validator {:name ""})
+; {:name ["is not present"]}
+
+(user-validator {:name "Jimmy John's"})
+; {}
+```
+
+### Options:
+
+None.
+
+### Default error message:
+
+"is invalid"
+
 ## acceptance
 
 ```clojure
@@ -51,6 +96,7 @@ Maven:
 ```
 
 ### Options:
+
 * `:accept`  The value to compare against. Default `"1"`.
 
 ### Default error message:
@@ -80,6 +126,7 @@ Maven:
 ```
 
 ### Options:
+
 * `:confirm`  The key to compare against. Default `(attr)-conifrmation`.
 
 ### Default error message:
@@ -118,6 +165,7 @@ Maven:
 ```
 
 ### Options:
+
 * `:only-integer`  Accept only Integers. Default `(attr)-conifrmation`.
 * `not-an-int`  The error message to supply if the `:only-integer` validation fails. Default `"is not an integer"`.
 * `:greater-than` Value must be greater than this value. Default `nil`.
@@ -227,6 +275,12 @@ Same as numericality.
 ### Default error message:
 
 "has the incorrect format"
+
+## Common Options:
+
+* `:message` Provide a custom messag upon failure.
+* `:allow-nil`  Allow the value to be nil. Default `false`.
+* `:allow-blank`  Allow the value to be blank (i.e. empty string or empty collection). Default `false`.
 
 ## License
 
