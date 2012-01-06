@@ -1,117 +1,103 @@
 (ns metis.validator.core-spec
   (:use [speclj.core]
-    [clojure.repl :only [source]]
-    [metis.validator.core]
-    [metis.validator.validations :only [presence with] :rename {with my-with}]))
+    [metis.validator.core]))
 
 (defvalidator generic-record-validator
-  (validate [:first-name :zipcode] [:presence {:allow-blank true}]))
-
-(defvalidator GenericRecordValidator
-  (validate [:first-name :zipcode] [:presence {:allow-blank true}]))
+  ([:first-name :zipcode] [:presence {:allow-blank true}])
+  (:first-name :presence {:allow-nil true}))
 
 (describe "validator"
 
-  (context "validate attr"
+  (context "run validation"
     (it "runs the validation"
-      (should-not= nil (validate-attr {:foo nil} :foo :presence {}))
-      (should= nil (validate-attr {:foo "something"} :foo :presence {}))
-      (should= "message" (validate-attr {:foo ""} :foo :presence {:message "message"})))
+      (should-not= nil (-run-validation {:foo nil} :foo :presence {}))
+      (should= nil (-run-validation {:foo "something"} :foo :presence {})))
 
     (it "uses the given error message"
       (let [message "other message"]
-        (should= message (validate-attr {:foo nil} :foo :presence {:message message}))))
+        (should= message (-run-validation {:foo nil} :foo :presence {:message message}))))
 
     (it "allows nil"
-      (let [message "other message"]
-        (should= nil (validate-attr {:foo nil} :foo :presence {:message message :allow-nil true}))))
+      (should= nil (-run-validation {:foo nil} :foo :presence {:allow-nil true})))
 
     (it "allows blank"
-      (let [message "other message"]
-        (should= nil (validate-attr {:foo ""} :foo :presence {:message message :allow-blank true}))))
+      (should= nil (-run-validation {:foo ""} :foo :presence {:allow-blank true})))
+
+    ;allows empty (nil or blank)
+    )
+
+  (context "run validations"
+    (it "runs the validations"
+      (should= 1 (count (-run-validations {:foo nil} :foo [[:presence {}]])))
+      (should= () (-run-validations {:foo "something"} :foo [[:presence {}]]))
+      (should= 1 (count (-run-validations {:foo "som"} :foo [[:length {:equal-to 4}] [:presence {}]]))))
+    )
+
+  (context "parsing"
+
+    (it "-parse-attributes: converts attributes into a collection of attributes"
+      (should= [:attr1] (-parse-attributes :attr1))
+      (should= [:attr1 :attr2] (-parse-attributes [:attr1 :attr2])))
+
+    (it "-parse-validations: converts validations into a collection of attributes"
+      (should= [[:validator-name {}]] (-parse-validations [:validator-name]))
+      (should= [[:validator-name {}]] (-parse-validations [:validator-name {}]))
+      (should= [[:validator-name {}] [:other-validator {}]] (-parse-validations [:validator-name {} :other-validator]))
+      (should= [[:validator-name {}] [:other-validator {}]] (-parse-validations [:validator-name {} :other-validator {}])))
+
+    (for [params [[:attr1 :validation1] [:attr1 :validation1 {}] [:attr1 [:validation1]] [[:attr1] :validation1]]]
+      (it (str "-parse: returns [[:attr1] [[:validation1 {}]]] for parameters " params)
+        (should= [[:attr1] [[:validation1 {}]]] (apply -parse params))))
 
     )
 
-  (context "normalize keywords"
-    (it "given one keyword it returns a collection"
-      (should= [:foo] (normalize-attributes :foo)))
+  (context "expand validations"
+    (it "-expand-validation"
+      (should= {:attr #{[:validation1 {}]}} (-expand-validation [:attr [:validation1]]))
+      (should= {:attr #{[:validation1 {}]}} (-expand-validation [:attr [:validation1 :validation1]]))
+      (should= {:attr #{[:validation1 {}]}} (-expand-validation [:attr [:validation1 {} :validation1]]))
+      (should= {:attr #{[:validation1 {}]}} (-expand-validation [:attr [:validation1 {} :validation1 {}]]))
+      (should= {:attr #{[:validation1 {}] [:validation2 {}]}} (-expand-validation [:attr [:validation1 {} :validation2]])))
 
-    (it "given one keyword in a collection it returns a collection"
-      (should= [:foo] (normalize-attributes [:foo])))
-
-    (it "given multiple keywords in a collection it returns a collection"
-      (should= [:foo :bar] (normalize-attributes [:foo :bar])))
-
-    (it "given one validation without args it returns a collection with args"
-      (should= [[:foo {}]] (normalize-validations :foo)))
-
-    (it "given one validation without args it returns a collection with args"
-      (should= [[:foo {}]] (normalize-validations [:foo])))
-
-    (it "given one keyword in a collection it returns a collection"
-      (should= [[:foo {}]] (normalize-validations [:foo {}])))
-
-    (it "given multiple validations in a collection it returns a collection of validations with args"
-      (should= [[:foo {}] [:bar {}]] (normalize-validations [:foo :bar])))
-
-    (it "given multiple validations in a collection it returns a collection of validations with args"
-      (should= [[:foo {:thing "here"}] [:bar {}] [:baz {:one "two"}]] (normalize-validations [:foo {:thing "here"} :bar :baz {:one "two"}])))
-    )
-
-  (context "validate"
-    (it "accepts an attribute to validate and a validation as keywords"
-      (let [errors (validate {:foo "foo"} :foo :presence)]
-        (should= {} errors)))
-
-    (it "accepts an attribute to validate as a collection"
-      (let [errors (validate {:foo "foo"} [:foo] :presence)]
-        (should= {} errors)))
-
-    (it "accepts many attributes to validate as a collection"
-      (let [errors (validate {:foo "foo"} [:foo :bar] :presence)]
-        (should (:bar errors))))
-
-    (it "accepts validations as a keyword with arguements"
-      (let [errors (validate {:foo "foo"} :foo :presence {})]
-        (should= {} errors)))
-
-    (it "accepts a validation as a collection without arguements"
-      (let [errors (validate {:foo "foo"} :foo [:presence])]
-        (should= {} errors)))
-
-    (it "accepts validations as a collection with arguements"
-      (let [errors (validate {:foo "foo"} :foo [:presence {}])]
-        (should= {} errors)))
-
-    (it "accepts multiple validations with or without arguements in a collection"
-      (let [message "some error"
-            errors (validate {:foo "foo"} :foo [:presence :length {:equal-to 3} :email {:message message}])]
-        (should= {:foo [message]} errors)))
-
-    (it "returns a map with a collection of errors"
-      (let [message "error"
-            errors (validate {:foo ""} :foo [:presence {:message message}])]
-        (should= {:foo [message]} errors)))
-
-    (it "runs all validations and returns errors"
-      (let [message "error"
-            errors (validate {:foo ""} :foo [:presence {:message message} :with {:validator (fn [_] true) :message message}])]
-        (should= {:foo [message]} errors)))
-
-    )
-
-  (context "merge errors"
-    (it "combines to maps of errors into one"
-      (should= {:foo ["bar" "baz"]} (merge-errors {:foo ["bar"]} {:foo ["baz"]}))
-      (should= {:foo ["bar" "baz"] :baz ["bar"]} (merge-errors {:foo ["bar"]} {:foo ["baz"]} {:baz ["bar"]})))
+    (it "-expand-validations"
+      (should= {:attr #{[:validation1 {}]}} (-expand-validations [[:attr [:validation1]]]))
+      (should= {:attr #{[:validation1 {}] [:validation2 {}]}} (-expand-validations [[:attr [:validation1]] [:attr [:validation2]]]))
+      (should= {:attr #{[:validation1 {}]}} (-expand-validations [[:attr [:validation1]] [:attr [:validation1]]])))
 
     )
 
   (context "defvalidator"
     (it "defines a validator"
       (should= {} (generic-record-validator {:first-name "Guy" :zipcode ""}))
-      (should (:first-name (generic-record-validator {:first-name nil :zipcode "12345"})))
-      (should= {} (GenericRecordValidator {:first-name "Guy" :zipcode ""}))
-      (should (:first-name (GenericRecordValidator {:first-name nil :zipcode "12345"}))))
+      (should (:first-name (generic-record-validator {:first-name nil :zipcode "12345"}))))
+    )
+
+  (context "validate"
+    (it "validates an individual record"
+      (let [valid-record {:first-name "Guy" :zipcode ""}
+            invalid-record {:first-name nil :zipcode "12345"}
+            vaidations {:zipcode #{[:presence {:allow-blank true}]}, :first-name #{[:presence {:allow-nil true}] [:presence {:allow-blank true}]}}]
+        (should= {} (validate valid-record vaidations))
+        (should (:first-name (validate invalid-record vaidations)))))
+    )
+
+  (context "utils"
+    (it "-remove-nil: removes all nil entries"
+      (should= [] (-remove-nil [nil]))
+      (should= [10] (-remove-nil [10])))
+
+    (it "-merge-errors: merges a collection of maps into one map"
+      (should= {:a 1, :steak "sauce"} (-merge-errors [{:a 1} {:steak "sauce"}]))
+      (should= {} (-merge-errors [])))
+
+    (it "-remove-empty-values: remove all records with empty collections"
+      (should= {:stuff ["val1" "val2"]} (-remove-empty-values {:stuff ["val1" "val2"] :nothin []}))
+      (should= {} (-remove-empty-values {:nothin [] :blank []})))
+
+    (it "-merge-validations: merges maps that have sets for values"
+      (should= {:a #{:a :b} :b #{:b :c}} (-merge-validations [{:a #{:a :b}} {:b #{:b :c}}]))
+      (should= {:a #{:a :b :c}} (-merge-validations [{:a #{:a :b}} {:a #{:b :c}}]))
+      (should= {} (-merge-validations [])))
+
     )
   )
