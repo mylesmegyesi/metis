@@ -34,12 +34,10 @@
           {attr (-run-validations record attr attr-vals)})))))
 
 (defn -parse-attributes [attributes]
-  (cond
-    (keyword? attributes) [attributes]
-    (coll? attributes) attributes))
+  (flatten [attributes]))
 
 (defn -parse-validations [validations]
-  (let [validations (if (keyword? validations) [validations] validations)]
+  (let [validations (flatten [validations])]
     (loop [validations validations ret []]
       (if (empty? validations)
         ret
