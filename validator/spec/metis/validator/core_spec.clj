@@ -30,6 +30,9 @@
       (should-not= nil (-run-validation {:foo ""} :foo :presence {} :create))
       (should-not= nil (-run-validation {:foo ""} :foo :presence {} :update)))
 
+    (it "uses create as the default context"
+      (should= nil (-run-validation {:foo ""} :foo :presence {:on :update})))
+
     (it "doesn't run validations if on is set to create and context is update"
       (let [called-count (atom 0)]
         (with-redefs [presence (fn [& _] (swap! called-count #(inc %)))]
