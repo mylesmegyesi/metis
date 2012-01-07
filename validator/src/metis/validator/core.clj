@@ -1,15 +1,21 @@
 (ns metis.validator.core
   (:use
     [metis.validator.validations :only [get-validation]]
-    [metis.validator.util :only [blank? spear-case]]
+    [metis.validator.util :only [blank? spear-case in?]]
     [clojure.set :only [union]]))
 
-(defn -run-validation [record attr validation-name validation-args]
-  (let [{:keys [message allow-nil allow-blank] :or {allow-nil false allow-blank false}} validation-args
-        attr-value (attr record)
-        error (if (or (and allow-nil (nil? attr-value)) (and allow-blank (blank? attr-value))) nil ((get-validation validation-name) record attr validation-args))]
-    (when error
-      (if message message error))))
+
+
+(defn -run-validation
+  ([record attr validation-name validation-args]
+    (-run-validation record attr validation-name validation-args :create))
+  ([record attr validation-name validation-args context]
+    (let [{:keys [message allow-nil allow-blank on] :or {allow-nil false allow-blank false on [:create :update]}} validation-args
+          on (flatten [on])
+          attr-value (attr record)
+          error (if (or (and allow-nil (nil? attr-value)) (and allow-blank (blank? attr-value)) (not (in? context on))) nil ((get-validation validation-name) record attr validation-args))]
+      (when error
+        (if message message error)))))
 
 (defn -remove-nil [coll]
   (filter #(not (nil? %)) coll))

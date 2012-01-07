@@ -1,6 +1,7 @@
 (ns metis.validator.core-spec
   (:use [speclj.core]
-    [metis.validator.core]))
+    [metis.validator.core]
+    [metis.validator.validations :only [presence]]))
 
 (defvalidator generic-record-validator
   ([:first-name :zipcode] [:presence {:allow-blank true}])
@@ -24,6 +25,27 @@
       (should= nil (-run-validation {:foo ""} :foo :presence {:allow-blank true})))
 
     ;allows empty (nil or blank)
+
+    (it "runs validations on create and update by default"
+      (should-not= nil (-run-validation {:foo ""} :foo :presence {} :create))
+      (should-not= nil (-run-validation {:foo ""} :foo :presence {} :update)))
+
+    (it "doesn't run validations if on is set to create and context is update"
+      (let [called-count (atom 0)]
+        (with-redefs [presence (fn [& _] (swap! called-count #(inc %)))]
+          (should= nil (-run-validation {:foo ""} :foo :presence {:on :create} :update))
+          (should= 0 @called-count))))
+
+    (it "doesn't run validations if on is set to update and context is create"
+      (let [called-count (atom 0)]
+        (with-redefs [presence (fn [& _] (swap! called-count #(inc %)))]
+          (should= nil (-run-validation {:foo ""} :foo :presence {:on :update} :create))
+          (should= 0 @called-count))))
+
+    (it "on can be a singular or collection"
+      (should= nil (-run-validation {:foo "something"} :foo :presence {:on :create}))
+      (should= nil (-run-validation {:foo "something"} :foo :presence {:on [:create]})))
+
     )
 
   (context "run validations"
