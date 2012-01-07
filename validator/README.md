@@ -281,6 +281,7 @@ Same as numericality.
 * `:message` Provide a custom messag upon failure.
 * `:allow-nil`  Allow the value to be nil. Default `false`.
 * `:allow-blank`  Allow the value to be blank (i.e. empty string or empty collection). Default `false`.
+* `:on` Specifiy the context in which the validation should be run. Default `[:create :update]`.
 
 ## License
 
