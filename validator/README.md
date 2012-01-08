@@ -1,35 +1,17 @@
 # validator
 
-## Installation:
-
-Leiningen:
-
-```clojure
-[metis/validator "0.1.2"]
-```
-
-Maven:
-
-    <dependency>
-      <groupId>metis</groupId>
-      <artifactId>validator</artifactId>
-      <version>0.1.2</version>
-    </dependency>
-
 ## Usage
 
 ```clojure
 (use '[metis.validator.core])
 
 (defvalidator user-validator
-    (validate [:address :first-name :last-name :phone-number :email] :presence)
-    (validate :first-name :with {:validator (fn [attr] false) :message "error!"})
-    (validate :last-name :formatted {:pattern #"some pattern" :message "wrong formatting!"})
-    (validate :phone-number :phone-number)
-    (validate :email :email))
+    ([:address :first-name :last-name :phone-number :email] :presence)
+    (:first-name :with {:validator (fn [attr] false) :message "error!"})
+    (:last-name :formatted {:pattern #"some pattern" :message "wrong formatting!"}))
 
-(user-validator {:first-name nil :last-name "Smith" :phone-number "123456789" :email "snap.into@slim.jim"})
-; {:last-name ["wrong formatting!"], :first-name ["is not present" "error!"], :address ["is not present"]}
+(user-validator {:first-name nil :last-name "Smith" :phone-number "123456789" :email "snap.into@slim.jim"}
+; {:address ("is not present"), :first-name ("error!" "is not present"), :last-name ("wrong formatting!")}
 ```
 
 ## Built-in Validators
@@ -38,10 +20,10 @@ Maven:
 
 ```clojure
 (defvalidator location-validator
-    (validate :gps :with {:message "bad gps!" :validator (fn [attrs] (not (or (nil? (:latitude attrs)) (nil? (:longitude attrs)))))}))
+    (:gps :with {:message "bad gps!" :validator (fn [attrs] (not (or (nil? (:latitude attrs)) (nil? (:longitude attrs)))))}))
 
 (location-validator {:latitude "" :longitude nil})
-; {:gps ["bad gps!"]}
+; {:gps ("bad gps!")}
 
 (location-validator {:latitude "90" :longitude "20"})
 ; {}
@@ -59,13 +41,13 @@ Maven:
 
 ```clojure
 (defvalidator user-validator
-    (validate :name :presence))
+    (:name :presence))
 
 (user-validator {:name nil})
-; {:name ["is not present"]}
+; {:name ("is not present")}
 
 (user-validator {:name ""})
-; {:name ["is not present"]}
+; {:name ("is not present")}
 
 (user-validator {:name "Jimmy John's"})
 ; {}
@@ -83,16 +65,19 @@ None.
 
 ```clojure
 (defvalidator usage-validator
-    (validate :terms-of-service :acceptance))
+    (:terms-of-service :acceptance))
 	
 (usage-validator {:terms-of-service "1"})
 ; {}
 
 (defvalidator usage-validator
-    (validate :terms-of-service :acceptance {:accept "yes"}))
+    (:terms-of-service :acceptance {:accept "yes"}))
 
 (usage-validator {:terms-of-service "1"})
-; {:terms-of-service ["must be accepted"]}
+; {:terms-of-service ("must be accepted")}
+
+(usage-validator {:terms-of-service "yes"})
+; {}
 ```
 
 ### Options:
@@ -107,19 +92,19 @@ None.
 
 ```clojure
 (defvalidator user-validator
-    (validate :email :confirmation))
+    (:email :confirmation))
 	
 (user-validator {:email "snap.into@slim.jim"})
-; {:email ["doesn't match confirmation"]}
+; {:email ("doesn't match confirmation")}
 
 (user-validator {:email "snap.into@slim.jim" :email-confirmation "snap.into@slim.jim"})
 ; {}
 
 (defvalidator user-validator
-    (validate :email :confirmation {:confirm :some-other}))
+    (:email :confirmation {:confirm :some-other}))
 
 (user-validator {:email "snap.into@slim.jim" :email-confirmation "snap.into@slim.jim"})
-; {:email ["doesn't match confirmation"]}
+; {:email ("doesn't match confirmation")}
 
 (user-validator {:email "snap.into@slim.jim" :some-other "snap.into@slim.jim"})
 ; {}
@@ -137,28 +122,28 @@ None.
 
 ```clojure
 (defvalidator user-validator
-    (validate :age :numericality))
+    (:age :numericality))
 	
 (user-validator {:age 10})
 ; {}
 
 (user-validator {:age "asf"})
-; {:age ["is not a number"]}
+; {:age ("is not a number")}
 
 (defvalidator user-validator
-    (validate :age :numericality {:only-integer true}))
+    (:age :numericality {:only-integer true}))
 
 (user-validator {:age 10})
 ; {}
 
 (user-validator {:age 10.0})
-; {:age ["is not an integer"]}
+; {:age ("is not an integer")}
 
 (defvalidator user-validator
-    (validate :age :numericality {:greater-than 18}))
+    (:age :numericality {:greater-than 18}))
 
 (user-validator {:age 10})
-; {:age ["is not greater than 18"]}
+; {:age ("is not greater than 18")}
 
 (user-validator {:age 19})
 ; {}
@@ -195,10 +180,10 @@ Takes the `count` of the attribute and applies the numericallity validator to it
 
 ```clojure
 (defvalidator user-validator
-    (validate :zipcode :length {:equal-to 5}))
+    (:zipcode :length {:equal-to 5}))
 
 (user-validator {:zipcode "1234"})
-; {:zipcode ["is not equal to 5"]}
+; {:zipcode ("is not equal to 5")}
 
 	
 (user-validator {:zipcode "12345"})
@@ -217,10 +202,10 @@ Same as numericality.
 
 ```clojure
 (defvalidator user-validator
-    (validate :color :inclusion {:in [:blue :orange]}))
+    (:color :inclusion {:in [:blue :orange]}))
 
 (user-validator {:color :pink})
-; {:color ["is not included in the list"]}
+; {:color ("is not included in the list")}
 	
 (user-validator {:color :blue})
 ; {}
@@ -238,13 +223,13 @@ Same as numericality.
 
 ```clojure
 (defvalidator user-validator
-    (validate :color :exclusion {:from [:blue :orange]}))
+    (:color :exclusion {:from [:blue :orange]}))
 
 (user-validator {:color :pink})
 ; {}
 	
 (user-validator {:color :blue})
-; {:color ["is reserved"]}
+; {:color ("is reserved")}
 ```
 
 ### Options:
@@ -259,10 +244,10 @@ Same as numericality.
 
 ```clojure
 (defvalidator user-validator
-    (validate :name :formatted {:pattern #"[A-Z]+"}))
+    (:name :formatted {:pattern #"[A-Z]+" :message "is not capitalized"}))
 
 (user-validator {:name "Dave"})
-; {:name ["has the incorrect format"]}
+; {:name ("is not capitalized")}
 	
 (user-validator {:name "DAVE"})
 ; {}
