@@ -8,3 +8,4 @@
 *.lein-deps-sum
 *.iml
 *.idea
+*.DS_Store
