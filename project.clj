@@ -1,14 +1,14 @@
-(require '[summary])
+(use '[config])
 
-(defproject metis summary/version
-  :description "A collection of libraries for mapping data to persistence."
-  :url ~summary/url
-  :license ~summary/license
-  :dependencies [[org.clojure/clojure "1.4.0-alpha3"]
-                 [metis/validator ~summary/version]
-                 [metis/model ~summary/version]]
-  :dev-dependencies [[lein-sub "0.1.2"]]
+(defproject metis version
+  :description "A collection of libraries for persisting data."
+  :url ~url
+  :license ~license
+  :dependencies [~clojure
+                 [metis/validator ~version]
+                 [metis/data-store ~version]]
+  :dev-dependencies [[lein-sub "0.1.2"]
+                     ~speclj]
   :sub
   ["data_store"
-   "model"
    "validator"])

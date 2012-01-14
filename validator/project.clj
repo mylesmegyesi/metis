@@ -1,9 +1,9 @@
-(require '[summary])
+(use '[config])
 
-(defproject metis/validator summary/version
+(defproject metis/validator version
   :description "A library for validations."
-  :url ~summary/url
-  :license ~summary/license
-  :dependencies [[org.clojure/clojure "1.4.0-alpha3"]]
-  :dev-dependencies [[speclj "2.0.0"]]
+  :url ~url
+  :license ~license
+  :dependencies [~clojure]
+  :dev-dependencies [~speclj]
   :test-path "spec/")
