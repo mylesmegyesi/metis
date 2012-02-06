@@ -89,17 +89,6 @@
     (when-not (formatted? attr-value pattern)
       "has the incorrect format")))
 
-; RFC 2822
-(def email-pattern #"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
-(defn email [record attr {pattern :pattern}]
-  (when (formatted record attr {:pattern email-pattern})
-    "is not a valid email"))
-
-(def phone-number-pattern #"^(\s*)(\+?)(\s*[-|\.|\/]?\s*)(\d{0,3})(\s*[-|\.|\/]?\s*)(\d{1,3}|\((\d{1,3})\))(\s*[-|\.|\/]?\s*)(\d{3})(\s*[-|\.|\/]?\s*)(\d{4})(\s*)$")
-(defn phone-number [record attr {pattern :pattern}]
-  (when (formatted record attr {:pattern phone-number-pattern})
-    "is not a valid phone number"))
-
 (defn get-validation [validatior-key]
   (if-let [fn (ns-resolve 'metis.validator.validations (symbol (name validatior-key)))]
     fn

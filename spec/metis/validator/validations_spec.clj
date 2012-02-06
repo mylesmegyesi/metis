@@ -136,54 +136,6 @@
 
     )
 
-  (context "email"
-    (it "passes for valid email"
-      (should= nil (email {:foo "snap.into@slim.jim"} :foo {}))
-      (should= nil (email {:foo "snapinto@slim.jim"} :foo {})))
-
-    (it "fails for invalid email"
-      (should-not= nil (email {:foo "snap@into@slim.jim"} :foo {})))
-
-    )
-
-  (context "phone number"
-    (it "passes for valid phone number"
-      (should= nil (phone-number {:foo "800-800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "800-800.1234"} :foo {}))
-      (should= nil (phone-number {:foo "800-800/1234"} :foo {}))
-      (should= nil (phone-number {:foo "800-800 1234"} :foo {}))
-      (should= nil (phone-number {:foo "800-800  1234"} :foo {}))
-      (should= nil (phone-number {:foo "800 800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "800  800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "800 800 1234"} :foo {}))
-      (should= nil (phone-number {:foo "800  800  1234"} :foo {}))
-      (should= nil (phone-number {:foo "  800  800  1234  "} :foo {}))
-      (should= nil (phone-number {:foo "8008001234"} :foo {}))
-      (should= nil (phone-number {:foo "01-800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "(800)-800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "(800) 800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "(800)800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "(800)8001234"} :foo {}))
-      (should= nil (phone-number {:foo "1800-800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "200-800-800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "200 800-800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "200800-800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "+200 800-800-1234"} :foo {}))
-      (should= nil (phone-number {:foo "  +  200 (800)-800-1234"} :foo {}))
-      )
-
-    (it "fails for an invalid phone number"
-      (should-not= nil (phone-number {:foo "2000-800-800-1234"} :foo {}))
-      (should-not= nil (phone-number {:foo "200-8000-800-1234"} :foo {}))
-      (should-not= nil (phone-number {:foo "200-800-8000-1234"} :foo {}))
-      (should-not= nil (phone-number {:foo "200-800-800-01234"} :foo {}))
-      (should-not= nil (phone-number {:foo "200-800-800-234"} :foo {}))
-      (should-not= nil (phone-number {:foo "200-800-80-1234"} :foo {}))
-      (should-not= nil (phone-number {:foo "200--800-1234"} :foo {}))
-      )
-
-    )
-
   (context "get validation"
     (it "takes a keyword and returns the built-in validator"
       (should= (ns-resolve 'metis.validator.validations 'presence) (get-validation :presence)))
