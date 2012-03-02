@@ -1,4 +1,4 @@
-(ns metis.validator.util
+(ns metis.util
   (:use [clojure.string :only [blank? replace replace-first lower-case] :rename {blank? str-blank? replace str-replace}]))
 
 (defn blank? [attr]

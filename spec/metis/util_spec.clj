@@ -1,7 +1,7 @@
-(ns metis.validator.util-spec
+(ns metis.util-spec
   (:use
     [speclj.core]
-    [metis.validator.util]))
+    [metis.util]))
 
 (describe "utility functions"
 

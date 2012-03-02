@@ -1,6 +1,6 @@
-(ns metis.validator.validations-spec
+(ns metis.validations-spec
   (:use [speclj.core]
-    [metis.validator.validations :rename {with my-with}]))
+    [metis.validations :rename {with my-with}]))
 
 (describe "validations"
 
@@ -56,6 +56,9 @@
     )
 
   (context "numericality"
+    (it "fails if it isn't supplied with a string"
+      (should-not= nil (numericality {:foo 1} :foo {})))
+
     (it "passes when the attribute is an integer"
       (should= nil (numericality {:foo "1"} :foo {:only-integer true}))
       (should-not= nil (numericality {:foo "1.0"} :foo {:only-integer true})))
@@ -104,8 +107,24 @@
     )
 
   (context "length"
-    (it "calls the numericality validation on the count of the attribute"
-      (should= nil (length {:foo "1234"} :foo {:equal-to 4})))
+    (it "throws an exception when the length function hasn't been passed required options"
+      (should-throw (length {:foo "123"} :foo {})))
+
+    (it "passes if the length is equal to the equal-to option key"
+      (should= nil (length {:foo "1234"} :foo {:equal-to 4}))
+      (should= nil (length {:foo [1 2 3 4]} :foo {:equal-to 4})))
+
+    (it "passes if the length is not equal to the not-equal-to option key"
+      (should= nil (length {:foo "123"} :foo {:not-equal-to 4}))
+      (should= nil (length {:foo [1 2 3]} :foo {:not-equal-to 4})))
+
+    (it "fails if the length is not equal to the equal-to option key"
+      (should-not= nil (length {:foo "123"} :foo {:equal-to 4}))
+      (should-not= nil (length {:foo [1 2 3]} :foo {:equal-to 4})))
+
+    (it "fails if the length is equal to the not-equal-to option key"
+      (should-not= nil (length {:foo "1234"} :foo {:not-equal-to 4}))
+      (should-not= nil (length {:foo [1 2 3 4]} :foo {:not-equal-to 4})))
 
     )
 
@@ -128,7 +147,7 @@
     )
 
   (context "formatted"
-    (it "failes if attr is nil"
+    (it "fails if attr is nil"
       (should-not= nil (formatted {:foo nil} :foo {:pattern #""})))
 
     (it "returns nil when pattern matches"
@@ -136,9 +155,29 @@
 
     )
 
+  (context "is-integer"
+    (it "passes if the given value is an integer"
+      (should= nil (is-integer {:foo 1} :foo {})))
+
+    (it "fails if the given value isn't an integer"
+      (should-not= nil (is-integer {:foo "1"} :foo {}))
+      (should-not= nil (is-integer {:foo 1.0} :foo {})))
+
+    )
+
+  (context "is-float"
+    (it "passes if the given value is an float"
+      (should= nil (is-float {:foo 1.0} :foo {})))
+
+    (it "fails if the given value isn't an integer"
+      (should-not= nil (is-float {:foo "1"} :foo {}))
+      (should-not= nil (is-float {:foo 1} :foo {})))
+
+    )
+
   (context "get validation"
     (it "takes a keyword and returns the built-in validator"
-      (should= (ns-resolve 'metis.validator.validations 'presence) (get-validation :presence)))
+      (should= (ns-resolve 'metis.validations 'presence) (get-validation :presence)))
 
     (it "throws if the validation is not found"
       (should-throw Exception (get-validation :some-nonexistant-validation)))

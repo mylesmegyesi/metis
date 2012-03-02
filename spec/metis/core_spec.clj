@@ -1,7 +1,7 @@
-(ns metis.validator.core-spec
+(ns metis.core-spec
   (:use [speclj.core]
-    [metis.validator.core]
-    [metis.validator.validations :only [presence]]))
+    [metis.core]
+    [metis.validations :only [presence]]))
 
 (defvalidator generic-record-validator
   ([:first-name :zipcode] [:presence {:allow-blank true}])

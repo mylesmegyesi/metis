@@ -1,7 +1,7 @@
-(ns metis.validator.core
+(ns metis.core
   (:use
-    [metis.validator.validations :only [get-validation]]
-    [metis.validator.util :only [blank? spear-case in?]]
+    [metis.validations :only [get-validation]]
+    [metis.util :only [blank? spear-case in?]]
     [clojure.set :only [union]]))
 
 (defn -should-run? [options attr context]
