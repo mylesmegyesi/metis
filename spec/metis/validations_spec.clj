@@ -175,6 +175,20 @@
 
     )
 
+  (context "email"
+    (it "passes for valid email"
+      (should= nil (email {:foo "snap.into@slim.jim"} :foo {}))
+      (should= nil (email {:foo "s.n.a.p.i.n.t.o@s.l.i.m.j.i.com"} :foo {}))
+      (should= nil (email {:foo "come@me.bro"} :foo {}))
+      (should= nil (email {:foo "COME@me.bro"} :foo {}))
+      (should= nil (email {:foo "COME.ME@ME.bro"} :foo {}))
+      (should= nil (email {:foo "COME.ME@ME.BRO"} :foo {})))
+
+    (it "fails for invalid email"
+      (should-not= nil (email {:foo "snap@into@slim.jim"} :foo {})))
+
+    )
+
   (context "get validation"
     (it "takes a keyword and returns the built-in validator"
       (should= (ns-resolve 'metis.validations 'presence) (get-validation :presence)))

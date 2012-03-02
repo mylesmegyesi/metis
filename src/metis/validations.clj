@@ -102,6 +102,12 @@
     (when-not (float? attr-value)
       "float required")))
 
+; RFC 2822
+(def email-pattern #"[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?")
+(defn email [record attr {pattern :pattern}]
+  (when (formatted record attr {:pattern email-pattern})
+    "is not a valid email"))
+
 (defn get-validation [validatior-key]
   (if-let [fn (ns-resolve 'metis.validations (symbol (name validatior-key)))]
     fn
