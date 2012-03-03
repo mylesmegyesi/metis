@@ -108,8 +108,16 @@
   (when (formatted record attr {:pattern email-pattern})
     "is not a valid email"))
 
-(defn get-validation [validatior-key]
-  (if-let [fn (ns-resolve 'metis.validations (symbol (name validatior-key)))]
+(defn- special-validation [validatior-key]
+  (case validatior-key
+    :integer #'is-integer
+    :float #'is-float
+    nil))
+
+(defn validation-factory [validatior-key]
+  (if-let [fn (special-validation validatior-key)]
     fn
-    (throw (Exception. (str "Could not locate the validator: " (name validatior-key))))))
+    (if-let [fn (ns-resolve 'metis.validations (symbol (name validatior-key)))]
+      fn
+      (throw (Exception. (str "Could not locate the validator: " (name validatior-key)))))))
 

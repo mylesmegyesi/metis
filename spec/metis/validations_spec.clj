@@ -191,10 +191,21 @@
 
   (context "get validation"
     (it "takes a keyword and returns the built-in validator"
-      (should= (ns-resolve 'metis.validations 'presence) (get-validation :presence)))
+      (should= (ns-resolve 'metis.validations 'with) (validation-factory :with))
+      (should= (ns-resolve 'metis.validations 'presence) (validation-factory :presence))
+      (should= (ns-resolve 'metis.validations 'acceptance) (validation-factory :acceptance))
+      (should= (ns-resolve 'metis.validations 'confirmation) (validation-factory :confirmation))
+      (should= (ns-resolve 'metis.validations 'numericality) (validation-factory :numericality))
+      (should= (ns-resolve 'metis.validations 'length) (validation-factory :length))
+      (should= (ns-resolve 'metis.validations 'inclusion) (validation-factory :inclusion))
+      (should= (ns-resolve 'metis.validations 'exclusion) (validation-factory :exclusion))
+      (should= (ns-resolve 'metis.validations 'formatted) (validation-factory :formatted))
+      (should= (ns-resolve 'metis.validations 'is-integer) (validation-factory :integer))
+      (should= (ns-resolve 'metis.validations 'is-float) (validation-factory :float))
+      (should= (ns-resolve 'metis.validations 'email) (validation-factory :email)))
 
     (it "throws if the validation is not found"
-      (should-throw Exception (get-validation :some-nonexistant-validation)))
+      (should-throw Exception (validation-factory :some-nonexistant-validation)))
 
     )
 

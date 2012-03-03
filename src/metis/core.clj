@@ -1,6 +1,6 @@
 (ns metis.core
   (:use
-    [metis.validations :only [get-validation]]
+    [metis.validations :only [validation-factory]]
     [metis.util :only [blank? spear-case in?]]
     [clojure.set :only [union]]))
 
@@ -19,7 +19,7 @@
   ([record attr validation-name validation-args]
     (-run-validation record attr validation-name validation-args :create))
   ([record attr validation-name validation-args context]
-    (let [error (when (-should-run? validation-args (attr record) context) ((get-validation validation-name) record attr validation-args))]
+    (let [error (when (-should-run? validation-args (attr record) context) ((validation-factory validation-name) record attr validation-args))]
       (when error
         (if (:message validation-args) (:message validation-args) error)))))
 
