@@ -8,28 +8,41 @@
     (throw (Exception. "Validator not given."))))
 
 (defn presence [record attr {}]
-  (let [attr-value (attr record)]
+  (let [attr-value (get record attr)]
     (when-not (present? attr-value)
       "must be present")))
 
 (defn acceptance [record attr {:keys [accept] :or {accept "1"}}]
-  (let [attr-value (attr record)]
+  (let [attr-value (get record attr)]
     (when (not= attr-value accept)
       "must be accepted")))
 
 (defn confirmation [record attr args]
   (let [{:keys [confirm] :or {confirm (keyword (str (keyword->str attr) "-confirmation"))}} args
-        attr-value (attr record)
+        attr-value (get record attr)
         confirm-value (confirm record)]
     (when (not= attr-value confirm-value)
       "doesn't match confirmation")))
 
+(def numericality-defaults {:only-integer false
+                            :odd false
+                            :even false
+                            :is-not-an-int "must be an integer"
+                            :is-not-a-number "must be a number"
+                            :is-not-greater-than "must be greater than %s"
+                            :is-not-greater-than-or-equal-to "must be greater than or equal to %s" 
+                            :is-not-equal-to "must be equal to %s"
+                            :is-equal-to "must not be equal to %s"
+                            :is-not-less-than "must be less than %s"
+                            :is-not-less-than-or-equal-to "must be less than or equal to %s"
+                            :is-not-odd "must be odd"
+                            :is-not-even "must be even"
+                            :is-not-in "must be included in the list"
+                            :is-in "must not be included in the list"})
+
 (defn numericality [record attr args]
-  (let [attr-value (attr record)
-        {:keys [only-integer greater-than greater-than-or-equal-to equal-to not-equal-to less-than less-than-or-equal-to odd even in not-in]
-         :or {only-integer false
-              odd false
-              even false}} args
+  (let [attr-value (get record attr)
+        {:keys [only-integer greater-than greater-than-or-equal-to equal-to not-equal-to less-than less-than-or-equal-to odd even in not-in is-not-an-int is-not-a-number is-not-greater-than is-not-greater-than-or-equal-to is-not-equal-to is-equal-to is-not-less-than is-not-less-than-or-equal-to is-not-odd is-not-even is-not-in is-in]} (merge numericality-defaults args)
         greater-than-f (when greater-than (float greater-than))
         greater-than-or-equal-to-f (when greater-than-or-equal-to (float greater-than-or-equal-to))
         equal-to-f (when equal-to (float equal-to))
@@ -38,19 +51,6 @@
         less-than-or-equal-to-f (when less-than-or-equal-to (float less-than-or-equal-to))
         in (when in (map float in))
         not-in (when not-in (map float not-in))
-          {:keys [is-not-an-int is-not-a-number is-not-greater-than is-not-greater-than-or-equal-to is-not-equal-to is-equal-to is-not-less-than is-not-less-than-or-equal-to is-not-odd is-not-even is-not-in is-in]
-           :or {is-not-an-int "must be an integer"
-                is-not-a-number "must be a number"
-                is-not-greater-than "must be greater than %s"
-                is-not-greater-than-or-equal-to "must be greater than or equal to %s" 
-                is-not-equal-to "must be equal to %s"
-                is-equal-to "must not be equal to %s"
-                is-not-less-than "must be less than %s"
-                is-not-less-than-or-equal-to "must be less than or equal to %s"
-                is-not-odd "must be odd"
-                is-not-even "must be even"
-                is-not-in "must be included in the list"
-                is-in "must not be included in the list"}} args
         n-int (when (string? attr-value) (str->int attr-value))
         n-float (cond
           (string? attr-value) (str->float attr-value)
@@ -70,36 +70,46 @@
       (when (and (present? in) (not (includes? in n-float))) is-not-in)
       (when (and (present? not-in) (includes? not-in n-float)) is-in))))
 
+(def length-defaults {:is-not-greater-than "must have length greater than %s"
+                      :is-not-greater-than-or-equal-to "must have length greater than or equal to %s" 
+                      :is-not-equal-to "must have length equal to %s"
+                      :is-equal-to "must have length not equal to %s"
+                      :is-not-less-than "must have length less than %s"
+                      :is-not-less-than-or-equal-to "must have length less than or equal to %s"
+                      :is-not-odd "must have odd length"
+                      :is-not-even "must be even length"
+                      :is-not-in "must have length included in the list"
+                      :is-in "must have lenght not included in the list"})
+
 (defn length [record attr args]
-  (let [length (str (count (attr record)))]
-    (numericality {:len length} :len args)))
+  (let [length (str (count (get record attr)))]
+    (numericality {:len length} :len (merge length-defaults args))))
 
 (defn inclusion [record attr {:keys [in]}]
-  (let [attr-value (attr record)]
+  (let [attr-value (get record attr)]
     (when-not (includes? in attr-value)
       "must be included in the list")))
 
 (defn exclusion [record attr {:keys [from]}]
-  (let [attr-value (attr record)]
+  (let [attr-value (get record attr)]
     (when (includes? from attr-value)
       "is reserved")))
 
 (defn formatted [record attr {:keys [pattern] :or {pattern #""}}]
-  (let [attr-value (attr record)]
+  (let [attr-value (get record attr)]
     (when-not (formatted? attr-value pattern)
       "has the incorrect format")))
 
 (defn is-integer [record attr args]
-  (let [attr-value (attr record)]
+  (let [attr-value (get record attr)]
     (when-not (integer? attr-value)
       "must be an integer")))
 
 (defn is-float [record attr args]
-  (let [attr-value (attr record)]
+  (let [attr-value (get record attr)]
     (when-not (float? attr-value)
       "must be a floating point number")))
 
-; RFC 2822
 (def email-pattern #"[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?")
 (defn email [record attr {pattern :pattern}]
   (when (formatted record attr {:pattern email-pattern})
