@@ -29,8 +29,13 @@
 (defn keyword->str [k]
   (str (name k)))
 
-(defn in? [item coll]
-  (some #(= item %) coll))
+(defprotocol Includable
+  (includes? [this item]))
+
+(extend-protocol Includable
+  clojure.lang.Seqable
+    (includes? [this item]
+      (some #(= item %) this)))
 
 (def capital #"[A-Z]")
 (defn spear-case [s]

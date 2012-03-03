@@ -1,7 +1,7 @@
 (ns metis.core
   (:use
     [metis.validations :only [validation-factory]]
-    [metis.util :only [blank? spear-case in?]]
+    [metis.util]
     [clojure.set :only [union]]))
 
 (defn -should-run? [options attr context]
@@ -11,7 +11,7 @@
               on [:create :update]}} options
         on (flatten [on])]
     (not (or
-      (not (in? context on))
+      (not (includes? on context))
       (and allow-nil (nil? attr))
       (and allow-blank (blank? attr))))))
 
