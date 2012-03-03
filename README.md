@@ -1,4 +1,4 @@
-# metis [mee'-tis])
+# metis [mee'-tis]
 
 A library for validating maps in [Clojure](http://clojure.org/)
 
