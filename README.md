@@ -6,7 +6,7 @@ A library for validating maps in [Clojure](http://clojure.org/)
 
     :dependencies [[metis "1.5.0"]]  
 
-# [Usage](https://github.com/mylesmegyesi/metis/wiki/defvalidator)
+# [Usage](https://github.com/mylesmegyesi/metis/wiki/)
 
 # Contributing
 
