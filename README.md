@@ -4,12 +4,7 @@ A library for validating maps in [Clojure](http://clojure.org/)
 
 # Installation
 
-## Leiningen
-You will need [Leiningen](https://github.com/technomancy/leiningen) version 1.4 or later.
-
-```clojure
-:dependencies [[speclj "1.2.0"]]
-```
+    :dependencies [[metis "1.5.0"]]  
 
 # [Usage](https://github.com/mylesmegyesi/metis/wiki/defvalidator)
 
@@ -17,10 +12,10 @@ You will need [Leiningen](https://github.com/technomancy/leiningen) version 1.4 
 
 Clone the master branch, build, and run all the tests: 
 
-  git clone git@github.com:mylesmegyesi/metis.git 
-  cd metis
-  lein deps
-  lein spec
+    git clone git@github.com:mylesmegyesi/metis.git 
+    cd metis
+    lein deps
+    lein spec
 
 Make patches and submit them along with an issue (see below).
 
