@@ -30,7 +30,7 @@
                             :is-not-an-int "must be an integer"
                             :is-not-a-number "must be a number"
                             :is-not-greater-than "must be greater than %s"
-                            :is-not-greater-than-or-equal-to "must be greater than or equal to %s" 
+                            :is-not-greater-than-or-equal-to "must be greater than or equal to %s"
                             :is-not-equal-to "must be equal to %s"
                             :is-equal-to "must not be equal to %s"
                             :is-not-less-than "must be less than %s"
@@ -71,7 +71,7 @@
       (when (and (present? not-in) (includes? not-in n-float)) is-in))))
 
 (def length-defaults {:is-not-greater-than "must have length greater than %s"
-                      :is-not-greater-than-or-equal-to "must have length greater than or equal to %s" 
+                      :is-not-greater-than-or-equal-to "must have length greater than or equal to %s"
                       :is-not-equal-to "must have length equal to %s"
                       :is-equal-to "must have length not equal to %s"
                       :is-not-less-than "must have length less than %s"
