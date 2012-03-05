@@ -109,10 +109,6 @@
   (when (formatted record attr {:pattern email-pattern})
     "must be a valid email"))
 
-(defn type-name [record attr {:keys [is]}]
-  (when-not (= is (type (get record attr)))
-    "has the incorrect type"))
-
 (defn validation-factory [validatior-key]
   (if-let [fn (ns-resolve 'metis.validations (symbol (name validatior-key)))]
     fn

@@ -360,15 +360,6 @@
 
     )
 
-  (context "type name"
-    (it "passes if the type name matches"
-      (should= nil (type-name {:foo 1} :foo {:is java.lang.Long})))
-    
-    (it "fails if the type doesn't match"
-      (should-not= nil (type-name {:foo 1.0} :foo {:is java.lang.Long})))
-
-    )
-
   (context "validation factory"
     (it "takes a keyword and returns the built-in validator"
       (should= (ns-resolve 'metis.validations 'with) (validation-factory :with))
