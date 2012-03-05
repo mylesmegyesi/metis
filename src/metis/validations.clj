@@ -51,9 +51,13 @@
         less-than-or-equal-to-f (when less-than-or-equal-to (float less-than-or-equal-to))
         in (when in (map float in))
         not-in (when not-in (map float not-in))
-        n-int (when (string? attr-value) (str->int attr-value))
+        n-int (cond 
+          (string? attr-value) (str->int attr-value)
+          (integer? attr-value) attr-value 
+          :else nil)
         n-float (cond
           (string? attr-value) (str->float attr-value)
+          (integer? attr-value) (float attr-value)
           (float? attr-value) attr-value
           :else nil)]
     (or
@@ -100,31 +104,17 @@
     (when-not (formatted? attr-value pattern)
       "has the incorrect format")))
 
-(defn is-integer [record attr args]
-  (let [attr-value (get record attr)]
-    (when-not (integer? attr-value)
-      "must be an integer")))
-
-(defn is-float [record attr args]
-  (let [attr-value (get record attr)]
-    (when-not (float? attr-value)
-      "must be a floating point number")))
-
 (def email-pattern #"[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?")
 (defn email [record attr {pattern :pattern}]
   (when (formatted record attr {:pattern email-pattern})
     "must be a valid email"))
 
-(defn- special-validation [validatior-key]
-  (case validatior-key
-    :integer #'is-integer
-    :float #'is-float
-    nil))
+(defn type-name [record attr {:keys [is]}]
+  (when-not (= is (type (get record attr)))
+    "has the incorrect type"))
 
 (defn validation-factory [validatior-key]
-  (if-let [fn (special-validation validatior-key)]
+  (if-let [fn (ns-resolve 'metis.validations (symbol (name validatior-key)))]
     fn
-    (if-let [fn (ns-resolve 'metis.validations (symbol (name validatior-key)))]
-      fn
-      (throw (Exception. (str "Could not locate the validator: " (name validatior-key)))))))
+    (throw (Exception. (str "Could not locate the validator: " (name validatior-key))))))
 
