@@ -4,15 +4,15 @@ A library for validating maps in [Clojure](http://clojure.org/)
 
 # Installation
 
-    :dependencies [[metis "0.1.5"]]  
+    :dependencies [[metis "0.1.6"]]
 
 # [Usage](https://github.com/mylesmegyesi/metis/wiki/)
 
 # Contributing
 
-Clone the master branch, build, and run all the tests: 
+Clone the master branch, build, and run all the tests:
 
-    git clone git@github.com:mylesmegyesi/metis.git 
+    git clone git@github.com:mylesmegyesi/metis.git
     cd metis
     lein deps
     lein spec
@@ -25,7 +25,7 @@ Post issues on the metis github project:
 
 * [https://github.com/mylesmegyesi/metis/issues](https://github.com/mylesmegyesi/metis/issues)
 
-# License 
+# License
 
 Copyright (C) 2012 Myles Megyesi All Rights Reserved.
 
