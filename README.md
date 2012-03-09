@@ -4,7 +4,7 @@ A library for validating maps in [Clojure](http://clojure.org/)
 
 # Installation
 
-    :dependencies [[metis "0.1.6"]]
+    :dependencies [[metis "0.1.7"]]
 
 # [Usage](https://github.com/mylesmegyesi/metis/wiki/)
 
