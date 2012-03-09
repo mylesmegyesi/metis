@@ -5,11 +5,14 @@
     [clojure.set :only [union]]))
 
 (defn -should-run? [options attr context]
-  (let [{:keys [allow-nil allow-blank on]
+  (let [{:keys [allow-nil allow-blank allow-absence on]
          :or {allow-nil false
               allow-blank false
+              allow-absence false
               on [:create :update]}} options
-        on (flatten [on])]
+        on (flatten [on])
+        allow-nil (if allow-absence true allow-nil)
+        allow-blank (if allow-absence true allow-blank)]
     (not (or
       (not (includes? on context))
       (and allow-nil (nil? attr))

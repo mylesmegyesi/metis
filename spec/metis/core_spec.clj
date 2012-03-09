@@ -24,7 +24,9 @@
     (it "allows blank"
       (should= nil (-run-validation {:foo ""} :foo :presence {:allow-blank true})))
 
-    ;allows empty (nil or blank)
+    (it "allows absence"
+      (should= nil (-run-validation {:foo ""} :foo :presence {:allow-absence true}))
+      (should= nil (-run-validation {:foo nil} :foo :presence {:allow-absence true})))
 
     (it "runs validations on create and update by default"
       (should-not= nil (-run-validation {:foo ""} :foo :presence {} :create))
