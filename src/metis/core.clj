@@ -1,6 +1,5 @@
 (ns metis.core
   (:use
-    [metis.validations :only [validation-factory]]
     [metis.util]
     [clojure.set :only [union]]))
 
@@ -18,13 +17,40 @@
       (and allow-nil (nil? attr))
       (and allow-blank (blank? attr))))))
 
+(defprotocol AsString
+  (->string [this]))
+
+(extend-protocol AsString
+  clojure.lang.Keyword
+  (->string [this] (name this))
+
+  java.lang.String
+  (->string [this] this)
+
+  clojure.lang.Symbol
+  (->string [this] (name this)))
+
+(defn validator-name [name]
+  (let [name (->string name)
+        suffix "-validator"]
+    (symbol
+      (if (.endsWith name suffix)
+        name
+        (str name suffix)))))
+
+(defn- validator-factory [name]
+  (let [name (validator-name name)
+        f (resolve name)]
+    (or f (throw (Exception. (str "Cound not find validator " name))))))
+
 (defn -run-validation
   ([record attr validation-name validation-args]
     (-run-validation record attr validation-name validation-args :create))
   ([record attr validation-name validation-args context]
-    (let [error (when (-should-run? validation-args (attr record) context) ((validation-factory validation-name) record attr validation-args))]
+    (let [error (when (-should-run? validation-args (attr record) context) ((validator-factory validation-name) record attr validation-args))]
       (when error
-        (if (:message validation-args) (:message validation-args) error)))))
+        (let [given-message (:message validation-args)]
+          (if  given-message given-message error))))))
 
 (defn -remove-nil [coll]
   (filter #(not (nil? %)) coll))
@@ -34,19 +60,20 @@
     (for [[validation-name validation-args] validations]
       (-run-validation record attr validation-name validation-args))))
 
-(defn -merge-errors [errors]
-  (apply merge {} errors))
-
-(defn -remove-empty-values [map-to-filter]
-  (select-keys map-to-filter (for [entry map-to-filter :when (not (empty? (val entry)))] (key entry))))
+(defn- normalize-errors [errors]
+  (if (and (= 1 (count errors)) (map? (first errors)))
+    (first errors)
+    errors))
 
 (defn validate [record validations]
-  (-remove-empty-values
-    (-merge-errors
-      (for [validation validations]
-        (let [attr (key validation)
-              attr-vals (val validation)]
-          {attr (-run-validations record attr attr-vals)})))))
+  (reduce
+    (fn [errors [attr attr-vals]]
+      (let [attr-errors (-run-validations record attr attr-vals)]
+        (if (every? empty? attr-errors)
+          errors
+          (assoc errors attr (normalize-errors attr-errors)))))
+    {}
+    validations))
 
 (defn -parse-attributes [attributes]
   (flatten [attributes]))
@@ -83,6 +110,10 @@
   (-merge-validations (map -expand-validation validations)))
 
 (defmacro defvalidator [name & validations]
-  (let [validations (-expand-validations validations)]
-    `(defn ~name [record#]
-      (validate record# ~validations))))
+  (let [validations (-expand-validations validations)
+        name (validator-name name)]
+    `(do
+      (use 'metis.validations)
+      (defn ~name
+        ([record# attr# options#] (~name (attr# record#)))
+        ([record#] (validate record# ~validations))))))

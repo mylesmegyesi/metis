@@ -1,23 +1,23 @@
 (ns metis.validations
   (:use [metis.util]))
 
-(defn with [record attr {validator :validator}]
+(defn with-validator [record attr {validator :validator}]
   (if validator
     (when-not (validator record)
       "is invalid")
     (throw (Exception. "Validator not given."))))
 
-(defn presence [record attr {}]
+(defn presence-validator [record attr {}]
   (let [attr-value (get record attr)]
     (when-not (present? attr-value)
       "must be present")))
 
-(defn acceptance [record attr {:keys [accept] :or {accept "1"}}]
+(defn acceptance-validator [record attr {:keys [accept] :or {accept "1"}}]
   (let [attr-value (get record attr)]
     (when (not= attr-value accept)
       "must be accepted")))
 
-(defn confirmation [record attr args]
+(defn confirmation-validator [record attr args]
   (let [{:keys [confirm] :or {confirm (keyword (str (keyword->str attr) "-confirmation"))}} args
         attr-value (get record attr)
         confirm-value (confirm record)]
@@ -40,7 +40,7 @@
                             :is-not-in "must be included in the list"
                             :is-in "must not be included in the list"})
 
-(defn numericality [record attr args]
+(defn numericality-validator [record attr args]
   (let [attr-value (get record attr)
         {:keys [only-integer greater-than greater-than-or-equal-to equal-to not-equal-to less-than less-than-or-equal-to odd even in not-in is-not-an-int is-not-a-number is-not-greater-than is-not-greater-than-or-equal-to is-not-equal-to is-equal-to is-not-less-than is-not-less-than-or-equal-to is-not-odd is-not-even is-not-in is-in]} (merge numericality-defaults args)
         greater-than-f (when greater-than (float greater-than))
@@ -85,32 +85,26 @@
                       :is-not-in "must have length included in the list"
                       :is-in "must have lenght not included in the list"})
 
-(defn length [record attr args]
+(defn length-validator [record attr args]
   (let [length (str (count (get record attr)))]
-    (numericality {:len length} :len (merge length-defaults args))))
+    (numericality-validator {:len length} :len (merge length-defaults args))))
 
-(defn inclusion [record attr {:keys [in]}]
+(defn inclusion-validator [record attr {:keys [in]}]
   (let [attr-value (get record attr)]
     (when-not (includes? in attr-value)
       "must be included in the list")))
 
-(defn exclusion [record attr {:keys [from]}]
+(defn exclusion-validator [record attr {:keys [from]}]
   (let [attr-value (get record attr)]
     (when (includes? from attr-value)
       "is reserved")))
 
-(defn formatted [record attr {:keys [pattern] :or {pattern #""}}]
+(defn formatted-validator [record attr {:keys [pattern] :or {pattern #""}}]
   (let [attr-value (get record attr)]
     (when-not (formatted? attr-value pattern)
       "has the incorrect format")))
 
 (def email-pattern #"[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?")
-(defn email [record attr {pattern :pattern}]
-  (when (formatted record attr {:pattern email-pattern})
+(defn email-validator [record attr {pattern :pattern}]
+  (when (formatted-validator record attr {:pattern email-pattern})
     "must be a valid email"))
-
-(defn validation-factory [validatior-key]
-  (if-let [fn (ns-resolve 'metis.validations (symbol (name validatior-key)))]
-    fn
-    (throw (Exception. (str "Could not locate the validator: " (name validatior-key))))))
-

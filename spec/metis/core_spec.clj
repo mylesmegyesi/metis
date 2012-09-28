@@ -1,14 +1,36 @@
 (ns metis.core-spec
-  (:use [speclj.core]
-    [metis.core]
-    [metis.validations :only [presence]]))
+  (:use
+    [speclj.core :rename {with other-with}]
+    [metis.core]))
 
-(defvalidator generic-record-validator
+(defvalidator "other"
   ([:first-name :zipcode] [:presence {:allow-blank true}])
   (:first-name :presence {:allow-nil true}))
 
-(describe "validator"
+(defvalidator other-one
+  ([:first-name :zipcode] [:presence {:allow-blank true}])
+  (:first-name :presence {:allow-nil true}))
 
+(defvalidator :generic-record
+  ([:first-name :zipcode] [:presence {:allow-blank true}])
+  (:first-name :presence {:allow-nil true}))
+
+(defvalidator already-validator
+  ([:first-name :zipcode] [:presence {:allow-blank true}])
+  (:first-name :presence {:allow-nil true}))
+
+(defvalidator :country
+  ([:code :name] :presence))
+
+(defvalidator :address
+  ([:line-1 :line-2 :zipcode] :presence)
+  (:nation :country))
+
+(defvalidator :person
+  (:address :address)
+  (:first-name :presence))
+
+(describe "validator"
   (context "run validation"
     (it "runs the validation"
       (should-not= nil (-run-validation {:foo nil} :foo :presence {}))
@@ -37,13 +59,13 @@
 
     (it "doesn't run validations if on is set to create and context is update"
       (let [called-count (atom 0)]
-        (with-redefs [presence (fn [& _] (swap! called-count #(inc %)))]
+        (with-redefs [presence-validator (fn [& _] (swap! called-count #(inc %)))]
           (should= nil (-run-validation {:foo ""} :foo :presence {:on :create} :update))
           (should= 0 @called-count))))
 
     (it "doesn't run validations if on is set to update and context is create"
       (let [called-count (atom 0)]
-        (with-redefs [presence (fn [& _] (swap! called-count #(inc %)))]
+        (with-redefs [presence-validator (fn [& _] (swap! called-count #(inc %)))]
           (should= nil (-run-validation {:foo ""} :foo :presence {:on :update} :create))
           (should= 0 @called-count))))
 
@@ -97,7 +119,23 @@
     (it "defines a validator"
       (should= {} (generic-record-validator {:first-name "Guy" :zipcode ""}))
       (should (:first-name (generic-record-validator {:first-name nil :zipcode "12345"}))))
-    )
+
+    (it "defines a validator with with a string"
+      (should= {} (other-validator {:first-name "Guy" :zipcode ""})))
+
+    (it "defines a validator with with a symbol"
+      (should= {} (other-one-validator {:first-name "Guy" :zipcode ""})))
+
+    (it "does not re-append validator"
+      (should= {} (already-validator {:first-name "Guy" :zipcode ""})))
+
+    (it "handles nested maps with no errors"
+      (should= {} (person-validator {:first-name "name" :address {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}})))
+
+    (it "handles nested maps with errors"
+      (should= {:first-name '("must be present") :address {:nation {:name '("must be present"), :code '("must be present")} :zipcode '("must be present"), :line-1 '("must be present") :line-2 '("must be present")}} (person-validator {})))
+
+           )
 
   (context "validate"
     (it "validates an individual record"
@@ -113,18 +151,7 @@
       (should= [] (-remove-nil [nil]))
       (should= [10] (-remove-nil [10])))
 
-    (it "-merge-errors: merges a collection of maps into one map"
-      (should= {:a 1, :steak "sauce"} (-merge-errors [{:a 1} {:steak "sauce"}]))
-      (should= {} (-merge-errors [])))
-
-    (it "-remove-empty-values: remove all records with empty collections"
-      (should= {:stuff ["val1" "val2"]} (-remove-empty-values {:stuff ["val1" "val2"] :nothin []}))
-      (should= {} (-remove-empty-values {:nothin [] :blank []})))
-
     (it "-merge-validations: merges maps that have sets for values"
       (should= {:a #{:a :b} :b #{:b :c}} (-merge-validations [{:a #{:a :b}} {:b #{:b :c}}]))
       (should= {:a #{:a :b :c}} (-merge-validations [{:a #{:a :b}} {:a #{:b :c}}]))
-      (should= {} (-merge-validations [])))
-
-    )
-  )
+      (should= {} (-merge-validations [])))))
