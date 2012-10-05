@@ -4,7 +4,9 @@ A library for validating maps in [Clojure](http://clojure.org/)
 
 # Installation
 
-    :dependencies [[metis "0.1.7"]]
+``` clojure
+:dependencies [[metis "0.1.7"]]
+```
 
 # [Usage](https://github.com/mylesmegyesi/metis/wiki/)
 
@@ -12,10 +14,12 @@ A library for validating maps in [Clojure](http://clojure.org/)
 
 Clone the master branch, build, and run all the tests:
 
-    git clone git@github.com:mylesmegyesi/metis.git
-    cd metis
-    lein deps
-    lein spec
+``` bash
+git clone git@github.com:mylesmegyesi/metis.git
+cd metis
+lein deps
+lein spec
+```
 
 Make patches and submit them along with an issue (see below).
 
