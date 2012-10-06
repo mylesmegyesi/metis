@@ -4,19 +4,70 @@
     [metis.test-validators]
     [metis.core]))
 
+(defvalidator :generic-record
+  ([:first-name :zipcode] [:presence {:allow-blank true}])
+  (:first-name :presence {:allow-nil true}))
+
+(defvalidator "other"
+  ([:first-name :zipcode] :presence {:allow-nil false})
+  (:first-name :presence {:allow-nil false}))
+
+(defvalidator :unmerged-first-name
+  (:first-name :presence {:allow-nil false})
+  (:first-name :presence {:allow-blank false}))
+
+(defvalidator other-one
+  ([:first-name :zipcode] [:presence {:allow-blank false}])
+  (:first-name :presence {:allow-nil false}))
+
+(defvalidator test-validator
+  (:one :presence)
+  ([:two :three] :presence)
+  ([:four :five] :presence {:message "m"})
+  ([:six :seven] [:presence :length])
+  ([:eight] :presence {:message "m"})
+  (:nine :presence {:message "m"})
+  (:ten [:presence :length {:greater-than 5}])
+  (:eleven [:presence {:message "m"} :length {:greater-than 5}])
+  (:twelve [:presence {:allow-nil true}])
+  (:thirteen [:presence {:allow-blank true}])
+  (:fourteen [:presence {:allow-absence true}])
+  (:fifteen [:presence {:message "my message"}]))
+
+(defvalidator :country
+  ([:code :name] :presence))
+
+(defvalidator :address
+  ([:line-1 :line-2 :zipcode] :presence)
+  (:nation :country))
+
+(defvalidator :person
+  (:address :address)
+  (:first-name :presence))
+
 (describe "validator"
-  (it "defines a validator"
-    (should= {} (generic-record {:first-name "Guy" :zipcode ""}))
-    (should (:first-name (generic-record {:first-name nil :zipcode "12345"}))))
+  (it "defines a validator with a keyword as the name"
+    (should= {} (generic-record {:first-name "Guy" :zipcode ""})))
 
-  (it "defines a validator with with a string"
-    (should= {} (other {:first-name "Guy" :zipcode ""})))
+  (it "defines a validator with with a string as the name"
+    (should= {} (other {:first-name "Guy" :zipcode "12345"})))
 
-  (it "defines a validator with with a symbol"
-    (should= {} (other-one {:first-name "Guy" :zipcode ""})))
+  (it "defines a validator with with a symbol as the name"
+    (should= {} (other-one {:first-name "Guy" :zipcode "12345"})))
 
-  (it "does not re-append validator"
-    (should= {} (already-validator {:first-name "Guy" :zipcode ""})))
+  (it "runs validations on multiple fields"
+    (let [errors (other-one {})]
+      (should= 2 (count (:first-name errors)))
+      (should= 1 (count (:zipcode errors)))))
+
+  (it "merges validations for attributes when the options are the same"
+    (should= 1 (count (:first-name (other {:first-name nil})))))
+
+  (it "does not merge validations for attributes when the options are different"
+    (should= 2 (count (:first-name (unmerged-first-name {})))))
+
+  (it "can use a validator from a different file"
+    (should= 1 (count (:first-name (foreign {})))))
 
   (it "handles nested maps with no errors"
     (should= {} (person {:first-name "name" :address {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}})))
