@@ -99,6 +99,6 @@
     "has the incorrect format"))
 
 (def email-pattern #"[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?")
-(defn email [map key {pattern :pattern}]
+(defn email [map key _]
   (when (formatted map key {:pattern email-pattern})
     "must be a valid email"))
