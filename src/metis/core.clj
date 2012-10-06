@@ -7,14 +7,18 @@
   (let [{:keys [allow-nil allow-blank allow-absence only except]
          :or {allow-nil false
               allow-blank false
-              allow-absence false}} options
+              allow-absence false
+              only []
+              except []}} options
         allow-nil (if allow-absence true allow-nil)
-        allow-blank (if allow-absence true allow-blank)]
+        allow-blank (if allow-absence true allow-blank)
+        only (flatten [only])
+        except (flatten [except])]
     (not (or
       (and allow-nil (nil? attr))
       (and allow-blank (blank? attr))
-      (and context only (not (includes? only context)))
-      (and context except (includes? except context))))))
+      (and context (not (empty? only)) (not (includes? only context)))
+      (and context (not (empty? except)) (includes? except context))))))
 
 (defprotocol AsString
   (->string [this]))

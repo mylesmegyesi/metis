@@ -47,7 +47,7 @@
 
 (defvalidator :contextual
   (:first-name :presence {:only [:creation :update]})
-  (:address :presence {:only [:saving]})
+  (:address :presence {:only :saving})
   (:nation :presence {:except [:saving]}))
 
 (describe "validator"
