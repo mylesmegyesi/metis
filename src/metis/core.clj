@@ -3,22 +3,28 @@
     [metis.util]
     [clojure.set :only [union]]))
 
-(defn should-run? [options attr context]
-  (let [{:keys [allow-nil allow-blank allow-absence only except]
+(defn should-run? [record attr options context]
+  (let [{:keys [allow-nil allow-blank allow-absence only except if]
          :or {allow-nil false
               allow-blank false
               allow-absence false
               only []
-              except []}} options
+              except []
+              if (fn [attrs] true)}} options
         allow-nil (if allow-absence true allow-nil)
         allow-blank (if allow-absence true allow-blank)
         only (flatten [only])
-        except (flatten [except])]
+        except (flatten [except])
+        value (attr record)
+        if-condition (or (eval (:if options)) (fn [attrs] true))
+        if-not-condition (or (eval (:if-not options)) (fn [attrs] false))]
     (not (or
-      (and allow-nil (nil? attr))
-      (and allow-blank (blank? attr))
+      (and allow-nil (nil? value))
+      (and allow-blank (blank? value))
       (and context (not (empty? only)) (not (includes? only context)))
-      (and context (not (empty? except)) (includes? except context))))))
+      (and context (not (empty? except)) (includes? except context))
+      (not (if-condition record))
+      (if-not-condition record)))))
 
 (defprotocol AsString
   (->string [this]))
@@ -43,7 +49,7 @@
       (throw (Exception. (str "Cound not find validator " name ". Looked in " *ns* " for " name "."))))))
 
 (defn- run-validation [record attr validator options context]
-  (let [error (when (should-run? options (attr record) context) (validator record attr options))]
+  (let [error (when (should-run? record attr options context) (validator record attr options))]
     (when error
       (let [given-message (:message options)]
         (if  given-message given-message error)))))

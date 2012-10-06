@@ -50,7 +50,17 @@
   (:address :presence {:only :saving})
   (:nation :presence {:except [:saving]}))
 
+(defn payment-type [attrs]
+  (= (:payment-type attrs) "card"))
+
+(defvalidator :if-conditional
+  (:card-number :presence {:if payment-type}))
+
+(defvalidator :if-not-conditional
+  (:card-number :presence {:if-not payment-type}))
+
 (describe "validator"
+
   (it "defines a validator with a keyword as the name"
     (should= {} (generic-record {:first-name "Guy" :zipcode ""})))
 
@@ -81,6 +91,7 @@
     (should= {:first-name '("must be present") :address {:nation {:name '("must be present"), :code '("must be present")} :zipcode '("must be present"), :line-1 '("must be present") :line-2 '("must be present")}} (person {})))
 
   (context "dsl"
+
     (it "parses one attribute and one validator"
       (should-not= nil (:one (test-validator {}))))
 
@@ -151,7 +162,16 @@
       (let [errors (contextual {} :saving)]
         (should= nil (:first-name errors))
         (should= nil (:nation errors))
-        (should= 1 (count (:address errors)))))
+        (should= 1 (count (:address errors))))))
 
-    )
+  (context "conditional validation"
+
+    (it "only runs the validation when the 'if' condition is met"
+      (should= {} (if-conditional {}))
+      (should-not= nil (:card-number (if-conditional {:payment-type "card"}))))
+
+    (it "always runs the validation unless the 'if-not' condition is met"
+      (should-not= nil (:card-number (if-not-conditional {})))
+      (should= {} (if-not-conditional {:payment-type "card"}))))
+
   )
