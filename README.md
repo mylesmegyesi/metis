@@ -156,7 +156,7 @@ Lets define a custom validator that checks if every charater is an 'a'.
 ;{}
 
 (first-name-with-only-a {:first-name "abc"})
-;{:first-name ("not all a's")}
+;{:first-name ["not all a's"]}
 ```
 
 ### Composing Validators
@@ -189,7 +189,6 @@ In the same way that we can use custom validators within a defvalidator, we can 
   [:first-name :presence {:only :creation :message "error!"}]
   [:last-name :formatted {:pattern #"some pattern" :only [:updating :saving] :message "wrong formatting!"}]
   [:address :presence {:message "You must have an address." :except [:updating]}])
-
 
 (user-validator {}) ; when no context is specified, all validations are run
 ; {:first-name ["error!"], :last-name ["wrong formatting!"], :address ["You must have an address."]}
