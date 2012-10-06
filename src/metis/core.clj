@@ -4,18 +4,17 @@
     [clojure.set :only [union]]))
 
 (defn should-run? [options attr context]
-  (let [{:keys [allow-nil allow-blank allow-absence on]
+  (let [{:keys [allow-nil allow-blank allow-absence only except]
          :or {allow-nil false
               allow-blank false
-              allow-absence false
-              on [:create :update]}} options
-        on (flatten [on])
+              allow-absence false}} options
         allow-nil (if allow-absence true allow-nil)
         allow-blank (if allow-absence true allow-blank)]
     (not (or
-      (not (includes? on context))
       (and allow-nil (nil? attr))
-      (and allow-blank (blank? attr))))))
+      (and allow-blank (blank? attr))
+      (and context only (not (includes? only context)))
+      (and context except (includes? except context))))))
 
 (defprotocol AsString
   (->string [this]))
@@ -39,32 +38,29 @@
       (resolve name)
       (throw (Exception. (str "Cound not find validator " name ". Looked in " *ns* " for " name "."))))))
 
-(defn- run-validation
-  ([record attr validator options]
-    (run-validation record attr validator options :create))
-  ([record attr validator options context]
-    (let [error (when (should-run? options (attr record) context) (validator record attr options))]
-      (when error
-        (let [given-message (:message options)]
-          (if  given-message given-message error))))))
+(defn- run-validation [record attr validator options context]
+  (let [error (when (should-run? options (attr record) context) (validator record attr options))]
+    (when error
+      (let [given-message (:message options)]
+        (if  given-message given-message error)))))
 
 (defn- remove-nil [coll]
   (filter #(not (nil? %)) coll))
 
-(defn- run-validations [record attr validations]
+(defn- run-validations [record attr validations context]
   (remove-nil
     (for [[validator options] validations]
-      (run-validation record attr validator options))))
+      (run-validation record attr validator options context))))
 
 (defn- normalize-errors [errors]
   (if (and (= 1 (count errors)) (map? (first errors)))
     (first errors)
     errors))
 
-(defn -validate [record validations]
+(defn -validate [record validations context]
   (reduce
     (fn [errors [attr attr-vals]]
-      (let [attr-errors (run-validations record attr attr-vals)]
+      (let [attr-errors (run-validations record attr attr-vals context)]
         (if (every? empty? attr-errors)
           errors
           (assoc errors attr (normalize-errors attr-errors)))))
@@ -114,4 +110,6 @@
       (let [validations# (-expand-validations '~validations)]
         (defn ~name
           ([record# attr# options#] (~name (attr# record#)))
-          ([record#] (-validate record# validations#)))))))
+          ([record# context#] (-validate record# validations# context#))
+          ([record#] (-validate record# validations# nil))
+          )))))

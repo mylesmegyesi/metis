@@ -34,8 +34,8 @@
 
 (extend-protocol Includable
   clojure.lang.Seqable
-    (includes? [this item]
-      (some #(= item %) this)))
+  (includes? [this item]
+    (not (nil? (some #(= item %) this)))))
 
 (def capital #"[A-Z]")
 (defn spear-case [s]

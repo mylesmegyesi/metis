@@ -45,6 +45,11 @@
   (:address :address)
   (:first-name :presence))
 
+(defvalidator :contextual
+  (:first-name :presence {:only [:creation :update]})
+  (:address :presence {:only [:saving]})
+  (:nation :presence {:except [:saving]}))
+
 (describe "validator"
   (it "defines a validator with a keyword as the name"
     (should= {} (generic-record {:first-name "Guy" :zipcode ""})))
@@ -126,7 +131,27 @@
       (should= nil (:fourteen (test-validator {:fourteen ""}))))
 
     (it "uses the given error message"
-      (should= "my message" (first (:fifteen (test-validator {})))))
+      (should= "my message" (first (:fifteen (test-validator {}))))))
 
-           )
-          )
+  (context "contextual validation"
+
+    (it "runs all validations if no context is given"
+      (let [errors (contextual {})]
+        (should= 1 (count (:first-name errors)))
+        (should= 1 (count (:address errors)))
+        (should= 1 (count (:nation errors)))))
+
+    (it "runs the validations unless they are excluded"
+      (let [errors (contextual {} :creation)]
+        (should= 1 (count (:first-name errors)))
+        (should= 1 (count (:nation errors)))
+        (should= nil (:address errors))))
+
+    (it "only runs the validations in given context and excludes"
+      (let [errors (contextual {} :saving)]
+        (should= nil (:first-name errors))
+        (should= nil (:nation errors))
+        (should= 1 (count (:address errors)))))
+
+    )
+  )
