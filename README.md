@@ -1,6 +1,6 @@
 # metis [mee'-tis]
 
-A library for validating maps in [Clojure](http://clojure.org/)
+A library for data validation in [Clojure](http://clojure.org/) inspired by [Active Record Validations](http://guides.rubyonrails.org/active_record_validations_callbacks.html)
 
 # Installation
 
