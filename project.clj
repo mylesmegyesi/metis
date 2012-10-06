@@ -1,5 +1,5 @@
-(defproject metis "0.2.0"
-  :description "A library for validating maps in Clojure."
+(defproject metis "0.2.1"
+  :description "A library for data validation in Clojure."
   :url "https://github.com/mylesmegyesi/metis"
   :license {:name "Eclipse Public License - v 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"

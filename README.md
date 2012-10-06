@@ -1,7 +1,9 @@
 metis [mee'-tis]
 =============
 
-Metis is a library for data validation in [Clojure](http://clojure.org/) inspired by [Active Record Validations](http://guides.rubyonrails.org/active_record_validations_callbacks.html). Validations are used to ensure that the data coming from user input is valid. For example, when a user inputs their email address, it is important to ensure that the email looks like an email (test@test.com).
+Metis is a library for data validation in [Clojure](http://clojure.org/) inspired by [Active Record Validations](http://guides.rubyonrails.org/active_record_validations_callbacks.html).
+
+Validations are used to ensure that the data coming from user input is valid. For example, when a user inputs their email address, it is important to ensure that the email looks like an email (test@test.com).
 
 ## Installation
 
@@ -132,7 +134,7 @@ A validator is simply a function that takes in a map and returns an error or nil
     "must be present")))
 ```
 
-As you can see, this a very simple validator. It checks if the value is present and returns an error if it is not. This is structure of all the validators in Metis. Every validator takes in the map, the key to be validated, and a map of options. The presence validator, however, does not take in any options, so the third option is ignored.
+As you can see, this a very simple validator. It checks if the value is present and returns an error if it is not. This is the structure of all the validators in Metis. Every validator takes in the map, the key to be validated, and a map of options. The presence validator, however, does not take in any options, so the third option is ignored.
 
 Lets define a custom validator that checks if every charater is an 'a'.
 
@@ -232,7 +234,7 @@ Note: the context names here are arbitrary; they can be anything.
 ; {}
 ```
 
-# Contributing
+## Contributing
 
 Clone the master branch, build, and run all the tests:
 
@@ -245,13 +247,13 @@ lein spec
 
 Make patches and submit them along with an issue (see below).
 
-# Issues
+## Issues
 
 Post issues on the metis github project:
 
 * [https://github.com/mylesmegyesi/metis/issues](https://github.com/mylesmegyesi/metis/issues)
 
-# License
+## License
 
 Copyright (C) 2012 Myles Megyesi All Rights Reserved.
 
