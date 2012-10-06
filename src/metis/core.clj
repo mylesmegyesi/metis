@@ -48,19 +48,20 @@
       (resolve name)
       (throw (Exception. (str "Cound not find validator " name ". Looked in " *ns* " for " name "."))))))
 
-(defn- run-validation [record attr validator options context]
-  (let [error (when (should-run? record attr options context) (validator record attr options))]
-    (when error
-      (let [given-message (:message options)]
-        (if  given-message given-message error)))))
+(defn- run-validation [map key validator options context]
+  (when (should-run? map key options context)
+    (let [error (validator map key options)]
+      (when error (or (:message options) error)))))
 
-(defn- remove-nil [coll]
-  (filter #(not (nil? %)) coll))
-
-(defn- run-validations [record attr validations context]
-  (remove-nil
-    (for [[validator options] validations]
-      (run-validation record attr validator options context))))
+(defn- run-validations [map key validations context]
+  (reduce
+    (fn [errors [validator options]]
+      (let [error (run-validation map key validator options context)]
+        (if error
+          (conj errors error)
+          errors)))
+    []
+    validations))
 
 (defn- normalize-errors [errors]
   (if (and (= 1 (count errors)) (map? (first errors)))
@@ -114,12 +115,12 @@
   (-merge-validations (map -expand-validation validations)))
 
 (defmacro defvalidator [name & validations]
-  (let [name (validator-name name)]
+  (let [name (validator-name name)
+        validations (vec validations)]
     `(do
       (use 'metis.validators)
-      (let [validations# (-expand-validations '~validations)]
+      (let [validations# (-expand-validations ~validations)]
         (defn ~name
           ([record# attr# options#] (~name (attr# record#)))
           ([record# context#] (-validate record# validations# context#))
-          ([record#] (-validate record# validations# nil))
-          )))))
+          ([record#] (-validate record# validations# nil)))))))

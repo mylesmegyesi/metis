@@ -1,27 +1,23 @@
 (ns metis.validators
   (:use [metis.util]))
 
-(defn with [record attr {validator :validator}]
+(defn with [map _ {validator :validator}]
   (if validator
-    (when-not (validator record)
+    (when-not (validator map)
       "is invalid")
     (throw (Exception. "Validator not given."))))
 
-(defn presence [record attr {}]
-  (let [attr-value (get record attr)]
-    (when-not (present? attr-value)
-      "must be present")))
+(defn presence [map key _]
+  (when-not (present? (get map key))
+    "must be present"))
 
-(defn acceptance [record attr {:keys [accept] :or {accept "1"}}]
-  (let [attr-value (get record attr)]
-    (when (not= attr-value accept)
-      "must be accepted")))
+(defn acceptance [map key {:keys [accept] :or {accept "1"}}]
+  (when (not= accept (get map key))
+    "must be accepted"))
 
-(defn confirmation [record attr args]
-  (let [{:keys [confirm] :or {confirm (keyword (str (keyword->str attr) "-confirmation"))}} args
-        attr-value (get record attr)
-        confirm-value (confirm record)]
-    (when (not= attr-value confirm-value)
+(defn confirmation [map key args]
+  (let [{:keys [confirm] :or {confirm (keyword (str (keyword->str key) "-confirmation"))}} args]
+    (when (not= (get map key) (get map confirm))
       "doesn't match confirmation")))
 
 (def numericality-defaults {:only-integer false
@@ -40,8 +36,8 @@
                             :is-not-in "must be included in the list"
                             :is-in "must not be included in the list"})
 
-(defn numericality [record attr args]
-  (let [attr-value (get record attr)
+(defn numericality [values key args]
+  (let [value (get values key)
         {:keys [only-integer greater-than greater-than-or-equal-to equal-to not-equal-to less-than less-than-or-equal-to odd even in not-in is-not-an-int is-not-a-number is-not-greater-than is-not-greater-than-or-equal-to is-not-equal-to is-equal-to is-not-less-than is-not-less-than-or-equal-to is-not-odd is-not-even is-not-in is-in]} (merge numericality-defaults args)
         greater-than-f (when greater-than (float greater-than))
         greater-than-or-equal-to-f (when greater-than-or-equal-to (float greater-than-or-equal-to))
@@ -51,14 +47,14 @@
         less-than-or-equal-to-f (when less-than-or-equal-to (float less-than-or-equal-to))
         in (when in (map float in))
         not-in (when not-in (map float not-in))
-        n-int (cond 
-          (string? attr-value) (str->int attr-value)
-          (integer? attr-value) attr-value 
+        n-int (cond
+          (string? value) (str->int value)
+          (integer? value) value
           :else nil)
         n-float (cond
-          (string? attr-value) (str->float attr-value)
-          (integer? attr-value) (float attr-value)
-          (float? attr-value) attr-value
+          (string? value) (str->float value)
+          (integer? value) (float value)
+          (float? value) value
           :else nil)]
     (or
       (when (and only-integer (not (integer? n-int))) is-not-an-int)
@@ -85,26 +81,24 @@
                       :is-not-in "must have length included in the list"
                       :is-in "must have lenght not included in the list"})
 
-(defn length [record attr args]
-  (let [length (str (count (get record attr)))]
+(defn length [map key args]
+  (let [length (str (count (get map key)))]
     (numericality {:len length} :len (merge length-defaults args))))
 
-(defn inclusion [record attr {:keys [in]}]
-  (let [attr-value (get record attr)]
-    (when-not (includes? in attr-value)
-      "must be included in the list")))
+(defn inclusion [map key {:keys [in]}]
+  (when-not (includes? in (get map key))
+    "must be included in the list"))
 
-(defn exclusion [record attr {:keys [from]}]
-  (let [attr-value (get record attr)]
-    (when (includes? from attr-value)
+(defn exclusion [record key {:keys [from]}]
+  (let [key-value (get record key)]
+    (when (includes? from key-value)
       "is reserved")))
 
-(defn formatted [record attr {:keys [pattern] :or {pattern #""}}]
-  (let [attr-value (get record attr)]
-    (when-not (formatted? attr-value pattern)
-      "has the incorrect format")))
+(defn formatted [map key {:keys [pattern] :or {pattern #""}}]
+  (when-not (formatted? (get map key) pattern)
+    "has the incorrect format"))
 
 (def email-pattern #"[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?")
-(defn email [record attr {pattern :pattern}]
-  (when (formatted record attr {:pattern email-pattern})
+(defn email [map key {pattern :pattern}]
+  (when (formatted map key {:pattern email-pattern})
     "must be a valid email"))

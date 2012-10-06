@@ -5,59 +5,59 @@
     [metis.core]))
 
 (defvalidator :generic-record
-  ([:first-name :zipcode] [:presence {:allow-blank true}])
-  (:first-name :presence {:allow-nil true}))
+  [[:first-name :zipcode] [:presence {:allow-blank true}]]
+  [:first-name :presence {:allow-nil true}])
 
 (defvalidator "other"
-  ([:first-name :zipcode] :presence {:allow-nil false})
-  (:first-name :presence {:allow-nil false}))
+  [[:first-name :zipcode] :presence {:allow-nil false}]
+  [:first-name :presence {:allow-nil false}])
 
 (defvalidator :unmerged-first-name
-  (:first-name :presence {:allow-nil false})
-  (:first-name :presence {:allow-blank false}))
+  [:first-name :presence {:allow-nil false}]
+  [:first-name :presence {:allow-blank false}])
 
 (defvalidator other-one
-  ([:first-name :zipcode] [:presence {:allow-blank false}])
-  (:first-name :presence {:allow-nil false}))
+  [[:first-name :zipcode] [:presence {:allow-blank false}]]
+  [:first-name :presence {:allow-nil false}])
 
 (defvalidator test-validator
-  (:one :presence)
-  ([:two :three] :presence)
-  ([:four :five] :presence {:message "m"})
-  ([:six :seven] [:presence :length])
-  ([:eight] :presence {:message "m"})
-  (:nine :presence {:message "m"})
-  (:ten [:presence :length {:greater-than 5}])
-  (:eleven [:presence {:message "m"} :length {:greater-than 5}])
-  (:twelve [:presence {:allow-nil true}])
-  (:thirteen [:presence {:allow-blank true}])
-  (:fourteen [:presence {:allow-absence true}])
-  (:fifteen [:presence {:message "my message"}]))
+  [:one :presence]
+  [[:two :three] :presence]
+  [[:four :five] :presence {:message "m"}]
+  [[:six :seven] [:presence :length]]
+  [[:eight] :presence {:message "m"}]
+  [:nine :presence {:message "m"}]
+  [:ten [:presence :length {:greater-than 5}]]
+  [:eleven [:presence {:message "m"} :length {:greater-than 5}]]
+  [:twelve [:presence {:allow-nil true}]]
+  [:thirteen [:presence {:allow-blank true}]]
+  [:fourteen [:presence {:allow-absence true}]]
+  [:fifteen [:presence {:message "my message"}]])
 
 (defvalidator :country
-  ([:code :name] :presence))
+  [[:code :name] :presence])
 
 (defvalidator :address
-  ([:line-1 :line-2 :zipcode] :presence)
-  (:nation :country))
+  [[:line-1 :line-2 :zipcode] :presence]
+  [:nation :country])
 
 (defvalidator :person
-  (:address :address)
-  (:first-name :presence))
+  [:address :address]
+  [:first-name :presence])
 
 (defvalidator :contextual
-  (:first-name :presence {:only [:creation :update]})
-  (:address :presence {:only :saving})
-  (:nation :presence {:except [:saving]}))
+  [:first-name :presence {:only [:creation :update]}]
+  [:address :presence {:only :saving}]
+  [:nation :presence {:except [:saving]}])
 
 (defn payment-type [attrs]
   (= (:payment-type attrs) "card"))
 
 (defvalidator :if-conditional
-  (:card-number :presence {:if payment-type}))
+  [:card-number :presence {:if payment-type}])
 
 (defvalidator :if-not-conditional
-  (:card-number :presence {:if-not payment-type}))
+  [:card-number :presence {:if-not payment-type}])
 
 (describe "validator"
 

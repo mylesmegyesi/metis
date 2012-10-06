@@ -25,14 +25,14 @@ defvalidator is a macro that allows you to quickly define a validator function. 
 (use 'metis.core)
 
 (defvalidator user-validator
-  (:first-name :presence))
+  [:first-name :presence])
 ```
 
 ##### with options
 
 ```clojure
 (defvalidator user-validator
-  (:first-name :presence {:message "Please input your first name."}))
+  [:first-name :presence {:message "Please input your first name."}])
 ```
 
 #### Multiple Attributes and Single Validator
@@ -41,14 +41,14 @@ defvalidator is a macro that allows you to quickly define a validator function. 
 
 ```clojure
 (defvalidator user-validator
-  ([:first-name :last-name] :presence))
+  [[:first-name :last-name] :presence])
 ```
 
 ##### with options
 
 ```clojure
 (defvalidator user-validator
-  ([:first-name :last-name] :presence {:message "must have a first and last name silly!"}))
+  [[:first-name :last-name] :presence {:message "This field is required."}])
 ```
 
 #### Single Attribute and Multiple Validators
@@ -57,7 +57,7 @@ defvalidator is a macro that allows you to quickly define a validator function. 
 
 ```clojure
 (defvalidator user-validator
-  (:first-name [:presence :length]))
+  [:first-name [:presence :length]])
 ```
 
 ##### with options
@@ -65,13 +65,13 @@ defvalidator is a macro that allows you to quickly define a validator function. 
 ```clojure
 
 (defvalidator user-validator
-  (:first-name [:presence :length {:equal-to 5}]))
+  [:first-name [:presence :length {:equal-to 5}]])
 
 (defvalidator user-validator
-  (:first-name [:presence {:message "gotta have it!"} :length]))
+  [:first-name [:presence {:message "gotta have it!"} :length]])
 
 (defvalidator user-validator
-  (:first-name [:presence {:message "gotta have it!"} :length {:equal-to 5}]))
+  [:first-name [:presence {:message "gotta have it!"} :length {:equal-to 5}]])
 ```
 
 #### Multiple Attributes and Multiple Validators
@@ -80,7 +80,7 @@ defvalidator is a macro that allows you to quickly define a validator function. 
 
 ```clojure
 (defvalidator user-validator
-  ([:first-name :last-name] [:presence :length]))
+  [[:first-name :last-name] [:presence :length]])
 ```
 
 ##### with options
@@ -88,25 +88,25 @@ defvalidator is a macro that allows you to quickly define a validator function. 
 ```clojure
 
 (defvalidator user-validator
-  ([:first-name :last-name] [:presence :length {:equal-to 5}]))
+  [[:first-name :last-name] [:presence :length {:equal-to 5}]])
 
 (defvalidator user-validator
-  ([:first-name :last-name] [:presence {:message "gotta have it!"} :length]))
+  [[:first-name :last-name] [:presence {:message "gotta have it!"} :length]])
 
 (defvalidator user-validator
-  ([:first-name :last-name] [:presence {:message "gotta have it!"} :length {:equal-to 5}]))
+  [[:first-name :last-name] [:presence {:message "gotta have it!"} :length {:equal-to 5}]])
 ```
 
 #### All together now
 
 ```clojure
 (defvalidator user-validator
-  ([:address :first-name :last-name :phone-number :email] :presence)
-  (:first-name :with {:validator (fn [attr] false) :message "error!"})
-  (:last-name :formatted {:pattern #"some pattern" :message "wrong formatting!"}))
+  [[:address :first-name :last-name :phone-number :email] :presence]
+  [:first-name :with {:validator (fn [attr] false) :message "error!"}]
+  [:last-name :formatted {:pattern #"some pattern" :message "wrong formatting!"}])
 
 (user-validator {:first-name nil :last-name "Smith" :phone-number "123456789" :email "snap.into@slim.jim"}
-; {:address ("is not present"), :first-name ("error!" "is not present"), :last-name ("wrong formatting!")}
+; {:address ["is not present"], :first-name ["error!" "is not present"], :last-name ["wrong formatting!"]}
 ```
 
 #### Shared Options:
@@ -150,7 +150,7 @@ Lets define a custom validator that checks if every charater is an 'a'.
 ; "not all a's"
 
 (defvalidator first-name-with-only-a
-  (:first-name :all-a))
+  [:first-name :all-a])
 
 (first-name-with-only-a {:first-name "aaa"})
 ;{}
@@ -165,18 +165,18 @@ In the same way that we can use custom validators within a defvalidator, we can 
 
 ```clojure
 (defvalidator :country
-  ([:code :name] :presence))
+  [[:code :name] :presence])
 
 (defvalidator :address
-  ([:line-1 :line-2 :zipcode] :presence)
-  (:nation :country))
+  [[:line-1 :line-2 :zipcode] :presence]
+  [:nation :country])
 
 (defvalidator :person
-  (:address :address)
-  (:first-name :presence))
+  [:address :address]
+  [:first-name :presence])
 
 (person {})
-; {:address {:zipcode ("must be present"), :line-2 ("must be present"), :line-1 ("must be present"), :nation {:name ("must be present"), :code ("must be present")}}, :first-name ("must be present")}
+; {:address {:zipcode ["must be present"], :line-2 ["must be present"], :line-1 ["must be present"], :nation {:name ["must be present"], :code ["must be present"]}}, :first-name ["must be present"]}
 
 (person {:first-name "Myles" :address {:zipcode "60618" :line-1 "515 W Jackson Blvd." :line-2 "Floor 5" :nation {:code 1 :name "United States"}}})
 ; {}
@@ -186,25 +186,25 @@ In the same way that we can use custom validators within a defvalidator, we can 
 
 ```clojure
 (defvalidator user-validator
-  (:first-name :presence {:only :creation :message "error!"})
-  (:last-name :formatted {:pattern #"some pattern" :only [:updating :saving] :message "wrong formatting!"})
-  (:address :presence {:message "You must have an address." :except [:updating]}))
+  [:first-name :presence {:only :creation :message "error!"}]
+  [:last-name :formatted {:pattern #"some pattern" :only [:updating :saving] :message "wrong formatting!"}]
+  [:address :presence {:message "You must have an address." :except [:updating]}])
 
 
 (user-validator {}) ; when no context is specified, all validations are run
-; {:first-name ("error!"), :last-name ("wrong formatting!"), :address ("You must have an address.")}
+; {:first-name ["error!"], :last-name ["wrong formatting!"], :address ["You must have an address."]}
 
 (user-validator {} :creation)
-; {:first-name ("error!"), :address ("You must have an address.")}
+; {:first-name ["error!"], :address ["You must have an address."]}
 
 (user-validator {} :updating)
-; {:last-name ("wrong formatting!")}
+; {:last-name ["wrong formatting!"]}
 
 (user-validator {} :saving)
-; {:last-name ("wrong formatting!"), :address ("You must have an address.")}
+; {:last-name ["wrong formatting!"], :address ["You must have an address."]}
 
 (user-validator {} :somewhere-else)
-; {:address ("You must have an address.")}
+; {:address ["You must have an address."]}
 ```
 
 Note: the context names here are arbitrary; they can be anything.
@@ -216,19 +216,19 @@ Note: the context names here are arbitrary; they can be anything.
   (= (:payment-type attrs) "card"))
 
 (defvalidator :if-conditional
-  (:card-number :presence {:if payment-type}))
+  [:card-number :presence {:if payment-type}])
 
 (defvalidator :if-not-conditional
-  (:card-number :presence {:if-not payment-type}))
+  [:card-number :presence {:if-not payment-type}])
 
 (if-conditional {})
 ; {}
 
 (if-conditional {:payment-type "card"})
-; {:card-number ("must be present")}
+; {:card-number ["must be present"]}
 
 (if-not-conditional {})
-; {:card-number ("must be present")}
+; {:card-number ["must be present"]}
 
 (if-not-conditional {:payment-type "card"})
 ; {}
