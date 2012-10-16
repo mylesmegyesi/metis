@@ -16,8 +16,8 @@
         only (flatten [only])
         except (flatten [except])
         value (attr record)
-        if-condition (or (eval (:if options)) (fn [attrs] true))
-        if-not-condition (or (eval (:if-not options)) (fn [attrs] false))]
+        if-condition (or (:if options) (fn [attrs] true))
+        if-not-condition (or (:if-not options) (fn [attrs] false))]
     (not (or
       (and allow-nil (nil? value))
       (and allow-blank (blank? value))
