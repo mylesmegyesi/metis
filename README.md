@@ -182,7 +182,7 @@ As I said before, validators are functions that accept a map, key and options. T
 ; {}
 ```
 
-### Conditional Validation
+### Conditional validation
 
 Often times, the set of validations to run is not cut and dry. Consider a payment form in which the user can opt to input their credit card number or PayPal information. If they select credit card, we have to validate that the credit card number is formatted correctly. If they select PayPal, we have to validate the email address.
 
@@ -211,7 +211,7 @@ This can be accomplished using the `:if` and `:if-not` options. The `:if` option
 ; {}
 ```
 
-### Contextual Validation
+### Contextual validation
 
 Often times, a set of data, say a user's profile, will have multiple forms in an application; one form for creating the profile and another for updating. It can be useful to share the same validations across both of these forms, especially if there are many shared validations between them. However, there is always going to be some pesky field that is required for one form and not the other. To solve this, we can use contexts. The `:only` option is used to specify the contexts in which the validation should be run. The `:except` option is used to specify the contexts from which the validation should be excluded.
 
