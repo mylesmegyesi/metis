@@ -122,9 +122,9 @@ These options are shared by all validators, custom or built-in.
 * `:if` A function that takes a map and returns true if the validation should be run. Default `(fn [attrs] true)`.
 * `:if-not` A function that takes map and returns true if the validation should not be run. Default `(fn [attrs] false)`false
 
-### Defining custom Validators
+### Defining custom validators
 
-Even though Metis has many [built-in validators](https://github.com/mylesmegyesi/metis/wiki/Built-in-validators), you will probably need to define your own at some point. Custom validators are defined in the same way that the built-in validators are defined, as functions.
+Even though Metis has many [built-in](https://github.com/mylesmegyesi/metis/wiki) validators, you will probably need to define your own at some point. Custom validators are defined in the same way that the built-in validators are defined, as functions.
 
 A validator is simply a function that takes in a map and returns an error or nil. As an example, let's look at the built-in presence validator.
 
@@ -134,7 +134,7 @@ A validator is simply a function that takes in a map and returns an error or nil
     "must be present")))
 ```
 
-As you can see, this a very simple validator. It checks if the value is present and returns an error if it is not. This is the structure of all the validators in Metis. Every validator takes in the map, the key to be validated, and a map of options. The presence validator, however, does not take in any options, so the third option is ignored.
+As you can see, this is a very simple validator. It checks if the value is present and returns an error if it is not. This is the structure of all the validators in Metis. Every validator takes in the map, the key to be validated, and a map of options. The presence validator, however, does not take in any options, so the third option is ignored.
 
 Lets define a custom validator that checks if every charater is an 'a'.
 
@@ -159,9 +159,9 @@ Lets define a custom validator that checks if every charater is an 'a'.
 ;{:first-name ["not all a's"]}
 ```
 
-### Composing Validators
+### Composing validators
 
-In the same way that we can use custom validators within a defvalidator, we can also use previously defined validators.
+As I said before, validators are functions that accept a map, key and options. The function produced by the `defvalidator` macro also adheres to this interface, meaning that it can be reused in the same manner as custom validators. Let's take a look at how we can use this simple feature to validate nested maps.
 
 ```clojure
 (defvalidator :country
@@ -182,7 +182,38 @@ In the same way that we can use custom validators within a defvalidator, we can 
 ; {}
 ```
 
+### Conditional Validation
+
+Often times, the set of validations to run is not cut and dry. Consider a payment form in which the user can opt to input their credit card number or PayPal information. If they select credit card, we have to validate that the credit card number is formatted correctly. If they select PayPal, we have to validate the email address.
+
+This can be accomplished using the `:if` and `:if-not` options. The `:if` option is used to specify when the validation **should** happen. The `:if-not` option is used to specify when the validation **should not** happen.
+
+```clojure
+(defn payment-type [attrs]
+  (= (:payment-type attrs) "card"))
+
+(defvalidator :if-conditional
+  [:card-number :presence {:if payment-type}])
+
+(defvalidator :if-not-conditional
+  [:card-number :presence {:if-not payment-type}])
+
+(if-conditional {})
+; {}
+
+(if-conditional {:payment-type "card"})
+; {:card-number ["must be present"]}
+
+(if-not-conditional {})
+; {:card-number ["must be present"]}
+
+(if-not-conditional {:payment-type "card"})
+; {}
+```
+
 ### Contextual Validation
+
+Often times, a set of data, say a user's profile, will have multiple forms in an application; one form for creating the profile and another for updating. It can be useful to share the same validations across both of these forms, especially if there are many shared validations between them. However, there is always going to be some pesky field that is required for one form and not the other. To solve this, we can use contexts. The `:only` option is used to specify the contexts in which the validation should be run. The `:except` option is used to specify the contexts from which the validation should be excluded.
 
 ```clojure
 (defvalidator user-validator
@@ -207,31 +238,6 @@ In the same way that we can use custom validators within a defvalidator, we can 
 ```
 
 Note: the context names here are arbitrary; they can be anything.
-
-### Conditional Validation
-
-```clojure
-(defn payment-type [attrs]
-  (= (:payment-type attrs) "card"))
-
-(defvalidator :if-conditional
-  [:card-number :presence {:if payment-type}])
-
-(defvalidator :if-not-conditional
-  [:card-number :presence {:if-not payment-type}])
-
-(if-conditional {})
-; {}
-
-(if-conditional {:payment-type "card"})
-; {:card-number ["must be present"]}
-
-(if-not-conditional {})
-; {:card-number ["must be present"]}
-
-(if-not-conditional {:payment-type "card"})
-; {}
-```
 
 ## Contributing
 
