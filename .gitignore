@@ -10,3 +10,4 @@
 *.iml
 *.idea
 *.DS_Store
+.lein-plugins
