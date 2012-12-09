@@ -5,10 +5,14 @@ Metis is a library for data validation in [Clojure](http://clojure.org/) inspire
 
 Validations are used to ensure that the data coming from user input is valid. For example, when a user inputs their email address, it is important to ensure that the email looks like an email (test@test.com).
 
+## Requirements
+
+* Clojure 1.4+
+
 ## Installation
 
 ``` clojure
-:dependencies [[metis "0.2.1"]]
+:dependencies [[metis "0.3.0"]]
 ```
 
 ## Usage

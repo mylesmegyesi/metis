@@ -1,4 +1,4 @@
-(defproject metis "0.2.2"
+(defproject metis "0.3.0"
   :description "A library for data validation in Clojure."
   :url "https://github.com/mylesmegyesi/metis"
   :license {:name "Eclipse Public License - v 1.0"
@@ -13,6 +13,6 @@
   :test-path "spec"
 
   ; leiningen 2
-  :profiles {:dev {:dependencies [[speclj "2.3.0"]]}}
+  :profiles {:dev {:dependencies [[speclj "2.4.0"]]}}
   :test-paths ["spec/"]
-  :plugins [[speclj "2.3.0"]])
+  :plugins [[speclj "2.4.0"]])

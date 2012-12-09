@@ -11,20 +11,17 @@
   (when-not (present? (get map key))
     "must be present"))
 
-(defn satisfies-protocol [map key options]
-  (let [field-in-hash (get map key)
-        protocol (:protocol options)
-        error-message (str "must satisfy protocol " (:var protocol))]
-    (when-not (satisfies? protocol field-in-hash) error-message)))
+(defn satisfies-protocol [map key {:keys [protocol]}]
+  (when-not (satisfies? protocol (get map key))
+    (str "must satisfy protocol " (:var protocol))))
 
 (defn acceptance [map key {:keys [accept] :or {accept "1"}}]
   (when (not= accept (get map key))
     "must be accepted"))
 
-(defn confirmation [map key args]
-  (let [{:keys [confirm] :or {confirm (keyword (str (keyword->str key) "-confirmation"))}} args]
-    (when (not= (get map key) (get map confirm))
-      "doesn't match confirmation")))
+(defn confirmation [map key {:keys [confirm] :or {confirm (keyword (str (keyword->str key) "-confirmation"))}}]
+  (when (not= (get map key) (get map confirm))
+    "doesn't match confirmation"))
 
 (def numericality-defaults {:only-integer false
                             :odd false

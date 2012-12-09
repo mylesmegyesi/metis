@@ -1,8 +1,7 @@
 (ns metis.validators-spec
-  (:use
-    [speclj.core]
-    [metis.validators :rename {with my-with}]
-    [metis.support.addable]))
+  (:use [speclj.core]
+        [metis.validators :rename {with my-with}]
+        [metis.support.addable]))
 
 (describe "validations"
 
@@ -35,7 +34,7 @@
 
   (context "satisfies?"
     (it "passes when type implements addable"
-      (should= nil (satisfies-protocol {:thing (new-dummyaddable)} :thing {:protocol Addable})))
+      (should-be-nil (satisfies-protocol {:thing (new-dummyaddable)} :thing {:protocol Addable})))
 
     (it "fails when type does not implement addable"
       (let [expected-error "must satisfy protocol #'metis.support.addable/Addable"]
