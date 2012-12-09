@@ -124,7 +124,7 @@ These options are shared by all validators, custom or built-in.
 * `:only` Specifiy the contexts in which the validation should be run. Default `[]` (all contexts).
 * `:except` Specifiy the contexts in which the validation should not be run. Default `[]` (no contexts).
 * `:if` A function that takes a map and returns true if the validation should be run. Default `(fn [attrs] true)`.
-* `:if-not` A function that takes map and returns true if the validation should not be run. Default `(fn [attrs] false)`false
+* `:if-not` A function that takes map and returns true if the validation should not be run. Default `(fn [attrs] false)`.
 
 ### Defining custom validators
 
@@ -217,7 +217,7 @@ This can be accomplished using the `:if` and `:if-not` options. The `:if` option
 
 ### Contextual validation
 
-Often times, a set of data, say a user's profile, will have multiple forms in an application; one form for creating the profile and another for updating. It can be useful to share the same validations across both of these forms, especially if there are many shared validations between them. However, there is always going to be some pesky field that is required for one form and not the other. To solve this, we can use contexts. The `:only` option is used to specify the contexts in which the validation should be run. The `:except` option is used to specify the contexts from which the validation should be excluded.
+Often times, a set of data, say a user's profile, will have multiple forms in an application; possibly one form for creating the profile and another for updating. It can be useful to share the same validations across both of these forms, especially if there are many shared validations between them. However, there is always going to be some pesky field that is required for one form and not the other. To solve this, we can use contexts. The `:only` option is used to specify the contexts in which the validation should be run. The `:except` option is used to specify the contexts from which the validation should be excluded.
 
 ```clojure
 (defvalidator user-validator
