@@ -43,6 +43,7 @@
 
 (defvalidator :person
   [:address :address]
+  [:address1 :address {:message "here"}]
   [:first-name :presence])
 
 (defvalidator :contextual
@@ -85,10 +86,12 @@
     (should= 1 (count (:first-name (foreign {})))))
 
   (it "handles nested maps with no errors"
-    (should= {} (person {:first-name "name" :address {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}})))
+    (should= {} (person {:first-name "name"
+                         :address {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}
+                         :address1 {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}})))
 
   (it "handles nested maps with errors"
-    (should= {:first-name '("must be present") :address {:nation {:name '("must be present"), :code '("must be present")} :zipcode '("must be present"), :line-1 '("must be present") :line-2 '("must be present")}} (person {})))
+    (should= {:first-name '("must be present") :address1 ["here"] :address {:nation {:name '("must be present"), :code '("must be present")} :zipcode '("must be present"), :line-1 '("must be present") :line-2 '("must be present")}} (person {})))
 
   (context "dsl"
 

@@ -50,16 +50,16 @@
 
 (defn- run-validation [map key validator options context]
   (when (should-run? map key options context)
-    (let [error (validator map key options)]
-      (when error (or (:message options) error)))))
+    (validator map key options)))
 
 (defn- run-validations [map key validations context]
   (reduce
     (fn [errors [validator options]]
-      (let [error (run-validation map key validator options context)]
-        (if error
-          (conj errors error)
-          errors)))
+      (if-let [error (run-validation map key validator options context)]
+        (if (not (empty? error))
+          (conj errors (or (:message options) error))
+          errors)
+        errors))
     []
     validations))
 

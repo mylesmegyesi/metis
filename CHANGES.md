@@ -1,3 +1,7 @@
+# 0.3.1
+
+* fixes custom error message for nested validators
+
 # 0.2.1
 
 * adds contextual validators
