@@ -6,13 +6,11 @@
             :distribution :repo
             :comments "same as Clojure"}
 
-  :dependencies [[org.clojure/clojure "1.4.0"]]
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [commons-validator "1.4.0"]]
 
-  ; leiningen 1
-  :dev-dependencies [[speclj "2.3.0"]]
-  :test-path "spec"
+  :profiles {:dev {:dependencies [[speclj "2.5.0"]]
+                   :test-paths ["spec"]
+                   :plugins [[speclj "2.5.0"]]}}
 
-  ; leiningen 2
-  :profiles {:dev {:dependencies [[speclj "2.4.0"]]}}
-  :test-paths ["spec/"]
-  :plugins [[speclj "2.4.0"]])
+  )

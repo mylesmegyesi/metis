@@ -1,5 +1,6 @@
 (ns metis.validators
-  (:use [metis.util]))
+  (:require [metis.util :refer :all])
+  (:import [org.apache.commons.validator.routines EmailValidator UrlValidator]))
 
 (defn with [map _ {validator :validator}]
   (if validator
@@ -101,7 +102,41 @@
   (when-not (formatted? (get map key) pattern)
     "has the incorrect format"))
 
-(def email-pattern #"[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?")
+(def email-validator (EmailValidator/getInstance))
+
 (defn email [map key _]
-  (when (formatted map key {:pattern email-pattern})
+  (when-not (.isValid email-validator (get map key))
     "must be a valid email"))
+
+(def url-option-values
+  {:allow-two-slashes UrlValidator/ALLOW_2_SLASHES
+   :allow-all-schemes UrlValidator/ALLOW_ALL_SCHEMES
+   :no-fragments UrlValidator/NO_FRAGMENTS
+   :allow-local-urls UrlValidator/ALLOW_LOCAL_URLS})
+
+(defn- url-option-value [options]
+  (reduce
+    (fn [opts option]
+      (if (option options)
+        (+ opts (option url-option-values))
+        opts))
+    0
+    (keys url-option-values)))
+
+(defn- url-validator [{:keys [schemes] :as options}]
+  (let [option-value (url-option-value options)
+        option-value-zero? (zero? option-value)]
+    (cond
+      (and schemes (not option-value-zero?))
+      (UrlValidator. (into-array schemes) option-value)
+      (and schemes option-value-zero?)
+      (UrlValidator. (into-array schemes))
+      (and (not schemes) (not option-value-zero?))
+      (UrlValidator. option-value)
+      :else
+      (UrlValidator.))))
+
+(defn url [map key options]
+  (when-not (.isValid (url-validator options) (get map key))
+    "must be a valid url"))
+

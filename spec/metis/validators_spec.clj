@@ -357,14 +357,36 @@
 
   (context "email"
     (it "passes for valid email"
-      (should= nil (email {:foo "snap.into@slim.jim"} :foo {}))
+      (should= nil (email {:foo "snap.into@slim.io"} :foo {}))
       (should= nil (email {:foo "s.n.a.p.i.n.t.o@s.l.i.m.j.i.com"} :foo {}))
-      (should= nil (email {:foo "come@me.bro"} :foo {}))
-      (should= nil (email {:foo "COME@me.bro"} :foo {}))
-      (should= nil (email {:foo "COME.ME@ME.bro"} :foo {}))
-      (should= nil (email {:foo "COME.ME@ME.BRO"} :foo {})))
+      (should= nil (email {:foo "come@me.io"} :foo {}))
+      (should= nil (email {:foo "COME@me.io"} :foo {}))
+      (should= nil (email {:foo "COME.ME@ME.io"} :foo {}))
+      (should= nil (email {:foo "COME.ME@ME.io"} :foo {})))
 
     (it "fails for invalid email"
       (should-not= nil (email {:foo "snap@into@slim.jim"} :foo {})))
 
-    ))
+    )
+
+  (context "url"
+
+    (it "passes for a valid url"
+      (should-be-nil (url {:foo "http://google.com"} :foo {}))
+      (should-be-nil (url {:foo "https://google.com"} :foo {}))
+      (should-be-nil (url {:foo "https://google.com/some-path//"} :foo {:allow-two-slashes true}))
+      (should-be-nil (url {:foo "unknown://google.com/some-path//"} :foo {:schemes ["unknown"] :allow-two-slashes true}))
+      (should-be-nil (url {:foo "unknown://google.com/"} :foo {:allow-all-schemes true}))
+      (should-be-nil (url {:foo "http://google.com#view=fitb"} :foo {}))
+      (should-be-nil (url {:foo "http://localhost/"} :foo {:allow-local-urls true}))
+        )
+
+    (it "fails for an invalid url"
+      (should-not-be-nil (url {:foo "unknown://foo.bar.com/"} :foo {}))
+      (should-not-be-nil (url {:foo "http://google.com"} :foo {:schemes ["https"]}))
+      (should-not-be-nil (url {:foo "http://google.com#view=fitb"} :foo {:no-fragments true}))
+      (should-not-be-nil (url {:foo "http://localhost/"} :foo {})))
+
+    )
+
+)
