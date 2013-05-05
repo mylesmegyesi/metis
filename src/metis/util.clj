@@ -26,9 +26,6 @@
     (Float. s)
     (catch NumberFormatException e)))
 
-(defn keyword->str [k]
-  (str (name k)))
-
 (defprotocol Includable
   (includes? [this item]))
 
@@ -37,7 +34,3 @@
   (includes? [this item]
     (not (nil? (some #(= item %) this)))))
 
-(def capital #"[A-Z]")
-(defn spear-case [s]
-  (let [s (or (replace-first s capital (fn [c] (lower-case c))) s)]
-    (or (str-replace s capital (fn [c] (str "-" (lower-case c)))) s)))

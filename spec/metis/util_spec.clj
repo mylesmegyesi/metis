@@ -20,12 +20,4 @@
 
     )
 
-  (context "spear case"
-    (it "converts a string to spear case"
-      (should= "thing" (spear-case "thing"))
-      (should= "thing" (spear-case "Thing"))
-      (should= "thing-thingy" (spear-case "ThingThingy")))
-
-    )
-
   )

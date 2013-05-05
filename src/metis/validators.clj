@@ -20,7 +20,7 @@
   (when (not= accept (get map key))
     "must be accepted"))
 
-(defn confirmation [map key {:keys [confirm] :or {confirm (keyword (str (keyword->str key) "-confirmation"))}}]
+(defn confirmation [map key {:keys [confirm] :or {confirm (keyword (str (name key) "-confirmation"))}}]
   (when (not= (get map key) (get map confirm))
     "doesn't match confirmation"))
 
