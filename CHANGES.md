@@ -1,3 +1,7 @@
+# 0.3.3
+
+* adds the contains validator
+
 # 0.3.2
 
 * adds the url validator
