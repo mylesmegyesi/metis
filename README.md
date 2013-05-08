@@ -12,7 +12,7 @@ Validations are used to ensure that the data coming from user input is valid. Fo
 ## Installation
 
 ``` clojure
-:dependencies [[metis "0.3.2"]]
+:dependencies [[metis "0.3.3"]]
 ```
 
 ## Usage
