@@ -18,6 +18,18 @@
 
     )
 
+  (context "contains"
+    (it "passes when the attribute is present"
+      (should= nil (contains {:foo "here!"} :foo {})))
+
+    (it "passes when the key is in the map, but nil"
+      (should= nil (contains {:foo nil} :foo {})))
+
+    (it "fails when the key is not present"
+      (should-not= nil (contains {} :foo {})))
+
+    )
+
   (context "presence"
     (it "passes when the attribute is present"
       (should= nil (presence {:foo "here!"} :foo {})))

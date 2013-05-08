@@ -8,6 +8,10 @@
       "is invalid")
     (throw (Exception. "Validator not given."))))
 
+(defn contains [map key _]
+  (when-not (contains? map key)
+    "must contain key"))
+
 (defn presence [map key _]
   (when-not (present? (get map key))
     "must be present"))

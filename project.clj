@@ -9,8 +9,11 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [commons-validator "1.4.0"]]
 
-  :profiles {:dev {:dependencies [[speclj "2.5.0"]]
+  :profiles {:dev {:dependencies [[speclj "2.6.1"]]
                    :test-paths ["spec"]
-                   :plugins [[speclj "2.5.0"]]}}
+                   :plugins [[speclj "2.6.1"]]}}
+
+  :scm {:name "git"
+        :url "https://github.com/mylesmegyesi/metis"}
 
   )
