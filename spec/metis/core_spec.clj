@@ -1,8 +1,7 @@
 (ns metis.core-spec
-  (:use
-    [speclj.core :rename {with other-with}]
-    [metis.test-validators]
-    [metis.core]))
+  (:require [speclj.core :refer :all :rename {with other-with}]
+            [metis.test-validators :refer :all]
+            [metis.core :refer :all]))
 
 (defvalidator :generic-record
   [[:first-name :zipcode] [:presence {:allow-blank true}]]
@@ -87,8 +86,8 @@
 
   (it "handles nested maps with no errors"
     (should= {} (person {:first-name "name"
-                         :address {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}
-                         :address1 {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}})))
+                         :address    {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}
+                         :address1   {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}})))
 
   (it "handles nested maps with errors"
     (should= {:first-name '("must be present") :address1 ["here"] :address {:nation {:name '("must be present"), :code '("must be present")} :zipcode '("must be present"), :line-1 '("must be present") :line-2 '("must be present")}} (person {})))

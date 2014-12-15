@@ -1,7 +1,7 @@
 (ns metis.validators-spec
-  (:use [speclj.core]
-        [metis.validators :rename {with my-with}]
-        [metis.support.addable]))
+  (:require [speclj.core :refer :all]
+            [metis.validators :refer :all :rename {with my-with}]
+            [metis.support.addable :refer :all]))
 
 (describe "validations"
 
@@ -51,7 +51,7 @@
     (it "fails when type does not implement addable"
       (let [expected-error "must satisfy protocol #'metis.support.addable/Addable"]
         (should= expected-error (satisfies-protocol {:thing 22} :thing {:protocol Addable}))))
-   )
+    )
 
   (context "acceptance"
     (it "passes when accepted"
@@ -391,7 +391,7 @@
       (should-be-nil (url {:foo "unknown://google.com/"} :foo {:allow-all-schemes true}))
       (should-be-nil (url {:foo "http://google.com#view=fitb"} :foo {}))
       (should-be-nil (url {:foo "http://localhost/"} :foo {:allow-local-urls true}))
-        )
+      )
 
     (it "fails for an invalid url"
       (should-not-be-nil (url {:foo "unknown://foo.bar.com/"} :foo {}))
@@ -401,4 +401,4 @@
 
     )
 
-)
+  )

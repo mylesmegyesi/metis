@@ -1,9 +1,9 @@
 (ns metis.util
-  (:use [clojure.string :only [blank? replace replace-first lower-case] :rename {blank? str-blank? replace str-replace}]))
+  (:require [clojure.string :as str]))
 
 (defn blank? [attr]
   (cond
-    (string? attr) (str-blank? attr)
+    (string? attr) (str/blank? attr)
     (coll? attr) (empty? attr)
     :else false))
 

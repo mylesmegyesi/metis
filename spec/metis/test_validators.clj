@@ -1,5 +1,5 @@
 (ns metis.test-validators
-  (:use [metis.core :only [defvalidator]]))
+  (:require [metis.core :refer [defvalidator]]))
 
 (defvalidator :foreign
   [:first-name :presence])

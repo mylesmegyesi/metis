@@ -1,7 +1,6 @@
 (ns metis.util-spec
-  (:use
-    [speclj.core]
-    [metis.util]))
+  (:require [speclj.core :refer :all]
+            [metis.util :refer :all]))
 
 (describe "utility functions"
 

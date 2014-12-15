@@ -1,16 +1,15 @@
 (ns metis.core
-  (:use
-    [metis.util]
-    [clojure.set :only [union]]))
+  (:require [metis.util :refer :all]
+            [clojure.set :as set]))
 
 (defn should-run? [record attr options context]
   (let [{:keys [allow-nil allow-blank allow-absence only except if]
-         :or {allow-nil false
-              allow-blank false
-              allow-absence false
-              only []
-              except []
-              if (fn [attrs] true)}} options
+         :or   {allow-nil     false
+                allow-blank   false
+                allow-absence false
+                only          []
+                except        []
+                if            (fn [attrs] true)}} options
         allow-nil (if allow-absence true allow-nil)
         allow-blank (if allow-absence true allow-blank)
         only (flatten [only])
@@ -19,12 +18,12 @@
         if-condition (or (:if options) (fn [attrs] true))
         if-not-condition (or (:if-not options) (fn [attrs] false))]
     (not (or
-      (and allow-nil (nil? value))
-      (and allow-blank (blank? value))
-      (and context (not (empty? only)) (not (includes? only context)))
-      (and context (not (empty? except)) (includes? except context))
-      (not (if-condition record))
-      (if-not-condition record)))))
+           (and allow-nil (nil? value))
+           (and allow-blank (blank? value))
+           (and context (not (empty? only)) (not (includes? only context)))
+           (and context (not (empty? except)) (includes? except context))
+           (not (if-condition record))
+           (if-not-condition record)))))
 
 (defprotocol AsString
   (->string [this]))
@@ -90,11 +89,11 @@
               next (second validations)]
           (cond
             (map? next)
-              (recur (rest (rest validations)) (conj ret [(validator-factory cur) next]))
+            (recur (rest (rest validations)) (conj ret [(validator-factory cur) next]))
             (keyword? next)
-              (recur (rest validations) (conj ret [(validator-factory cur) {}]))
+            (recur (rest validations) (conj ret [(validator-factory cur) {}]))
             (nil? next)
-              (recur [] (conj ret [(validator-factory cur) {}]))))))))
+            (recur [] (conj ret [(validator-factory cur) {}]))))))))
 
 (defn -parse
   ([attrs validation args]
@@ -103,7 +102,7 @@
    [(-parse-attributes attrs) (-parse-validations validations)]))
 
 (defn -merge-validations [validations]
-  (apply merge-with union {} validations))
+  (apply merge-with set/union {} validations))
 
 (defn -expand-validation [validation]
   (let [[attributes validations] (apply -parse validation)]
@@ -118,9 +117,9 @@
   (let [name (validator-name name)
         validations (vec validations)]
     `(do
-      (use 'metis.validators)
-      (let [validations# (-expand-validations ~validations)]
-        (defn ~name
-          ([record# attr# options#] (~name (attr# record#)))
-          ([record# context#] (-validate record# validations# context#))
-          ([record#] (-validate record# validations# nil)))))))
+       (use 'metis.validators)
+       (let [validations# (-expand-validations ~validations)]
+         (defn ~name
+           ([record# attr# options#] (~name (attr# record#)))
+           ([record# context#] (-validate record# validations# context#))
+           ([record#] (-validate record# validations# nil)))))))
