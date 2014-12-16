@@ -13,3 +13,4 @@
 *.DS_Store
 .lein-plugins
 *.lein-repl-history
+.metis
