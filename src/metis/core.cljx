@@ -1,56 +1,44 @@
 (ns metis.core
-  (:use
-    [metis.util]
-    [clojure.set :only [union]]))
+  (:require [clojure.set :as set]
+            [metis.util :as util]
+            [metis.validators]))
 
 (defn should-run? [record attr options context]
   (let [{:keys [allow-nil allow-blank allow-absence only except if]
-         :or {allow-nil false
-              allow-blank false
-              allow-absence false
-              only []
-              except []
-              if (fn [attrs] true)}} options
+         :or   {allow-nil     false
+                allow-blank   false
+                allow-absence false
+                only          []
+                except        []
+                if            (fn [attrs] true)}} options
         allow-nil (if allow-absence true allow-nil)
         allow-blank (if allow-absence true allow-blank)
-        only (flatten [only])
-        except (flatten [except])
+        only (set (flatten [only]))
+        except (set (flatten [except]))
         value (attr record)
         if-condition (or (:if options) (fn [attrs] true))
         if-not-condition (or (:if-not options) (fn [attrs] false))]
     (not (or
-      (and allow-nil (nil? value))
-      (and allow-blank (blank? value))
-      (and context (not (empty? only)) (not (includes? only context)))
-      (and context (not (empty? except)) (includes? except context))
-      (not (if-condition record))
-      (if-not-condition record)))))
-
-(defprotocol AsString
-  (->string [this]))
-
-(extend-protocol AsString
-  clojure.lang.Keyword
-  (->string [this] (name this))
-
-  java.lang.String
-  (->string [this] this)
-
-  clojure.lang.Symbol
-  (->string [this] (name this)))
+           (and allow-nil (nil? value))
+           (and allow-blank (util/blank? value))
+           (and context (not (empty? only)) (not (only context)))
+           (and context (not (empty? except)) (except context))
+           (not (if-condition record))
+           (if-not-condition record)))))
 
 (defn- validator-name [name]
-  (symbol (->string name)))
+  (symbol (clojure.core/name name)))
 
 (defn- validator-factory [name]
   (let [name (validator-name name)]
     (or
-      (resolve name)
-      (throw (Exception. (str "Cound not find validator " name ". Looked in " *ns* " for " name "."))))))
+      #+clj (or (ns-resolve (the-ns 'metis.validators) name) (resolve name))
+      #+cljs (or (js* "eval(~{})" (str "metis.validators." name)) (js* "eval(~{})" name))
+      (throw (#+clj Exception. #+cljs js/Error. (str "Cound not find validator " name))))))
 
-(defn- run-validation [map key validator options context]
+(defn- run-validation [map key validate-fn options context]
   (when (should-run? map key options context)
-    (validator map key options)))
+    (validate-fn map key options)))
 
 (defn- run-validations [map key validations context]
   (reduce
@@ -87,14 +75,13 @@
       (if (empty? validations)
         ret
         (let [cur (first validations)
-              next (second validations)]
+              next (second validations)
+              validation (validator-factory cur)
+              ret (conj ret [validation next])]
           (cond
-            (map? next)
-              (recur (rest (rest validations)) (conj ret [(validator-factory cur) next]))
-            (keyword? next)
-              (recur (rest validations) (conj ret [(validator-factory cur) {}]))
-            (nil? next)
-              (recur [] (conj ret [(validator-factory cur) {}]))))))))
+            (map? next) (recur (rest (rest validations)) ret)
+            (keyword? next) (recur (rest validations) ret)
+            (nil? next) (recur [] ret)))))))
 
 (defn -parse
   ([attrs validation args]
@@ -103,7 +90,7 @@
    [(-parse-attributes attrs) (-parse-validations validations)]))
 
 (defn -merge-validations [validations]
-  (apply merge-with union {} validations))
+  (apply merge-with set/union {} validations))
 
 (defn -expand-validation [validation]
   (let [[attributes validations] (apply -parse validation)]
@@ -114,13 +101,15 @@
 (defn -expand-validations [validations]
   (-merge-validations (map -expand-validation validations)))
 
+(defn validator [& validations]
+  (let [validations (vec validations)
+        validations (-expand-validations validations)]
+    (fn
+      ([record attr context] (-validate (attr record) validations context))
+      ([record context] (-validate record validations context))
+      ([record] (-validate record validations nil)))))
+
+#+clj
 (defmacro defvalidator [name & validations]
-  (let [name (validator-name name)
-        validations (vec validations)]
-    `(do
-      (use 'metis.validators)
-      (let [validations# (-expand-validations ~validations)]
-        (defn ~name
-          ([record# attr# options#] (~name (attr# record#)))
-          ([record# context#] (-validate record# validations# context#))
-          ([record#] (-validate record# validations# nil)))))))
+  (let [name (validator-name name)]
+    `(def ~name (apply validator ~(vec validations)))))

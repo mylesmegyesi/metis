@@ -1,20 +1,23 @@
 (ns metis.validators-spec
-  (:use [speclj.core]
-        [metis.validators :rename {with my-with}]
-        [metis.support.addable]))
+  (#+clj :require #+cljs :require-macros
+                  [speclj.core :refer [describe context it should= should-throw should-not= should-be-nil should-not-be-nil with-all]])
+  (:require [metis.validators :as validators :refer [contains presence acceptance confirmation numericality length inclusion exclusion formatted
+                                                     #+clj email #+clj url #+clj satisfies-protocol]]
+            [metis.support.addable :refer [new-dummyaddable Addable]]
+            [speclj.core]))
 
 (describe "validations"
 
   (context "with"
     (it "returns nil if the validation passes"
-      (should= nil (my-with {} nil {:validator (fn [attrs] true)})))
+      (should= nil (validators/with {} nil {:validator (fn [attrs] true)})))
 
     (it "returns an error message if the validation fails"
-      (should-not= nil (my-with {} nil {:validator (fn [attrs] false)})))
+      (should-not= nil (validators/with {} nil {:validator (fn [attrs] false)})))
 
     (it "throws an exception if validator is not given"
       (let [message "some error message"]
-        (should-throw Exception (my-with nil {}))))
+        (should-throw #+clj Exception #+cljs js/Error (validators/with nil {} {}))))
 
     )
 
@@ -44,6 +47,7 @@
       (should-not= nil (presence {:foo []} :foo {})))
     )
 
+  #+clj
   (context "satisfies?"
     (it "passes when type implements addable"
       (should-be-nil (satisfies-protocol {:thing (new-dummyaddable)} :thing {:protocol Addable})))
@@ -51,7 +55,7 @@
     (it "fails when type does not implement addable"
       (let [expected-error "must satisfy protocol #'metis.support.addable/Addable"]
         (should= expected-error (satisfies-protocol {:thing 22} :thing {:protocol Addable}))))
-   )
+    )
 
   (context "acceptance"
     (it "passes when accepted"
@@ -96,7 +100,7 @@
 
         )
 
-      (it "fails the the attribute is not a number"
+      (it "fails when the attribute is not a number"
         (should-not= nil (numericality {:foo "asdf"} :foo {}))
         (should= "some message" (numericality {:foo "asdf"} :foo {:is-not-a-number "some message"})))
 
@@ -108,11 +112,13 @@
         (should= nil (numericality {:foo 1} :foo {:only-integer true})))
 
       (it "fails when the number is a float"
-        (should-not= nil (numericality {:foo "1.0"} :foo {:only-integer true}))
-        (should-not= nil (numericality {:foo 1.0} :foo {:only-integer true})))
+        #+clj (should-not= nil (numericality {:foo "1.0"} :foo {:only-integer true}))
+        (should-not= nil (numericality {:foo "1.1"} :foo {:only-integer true}))
+        #+clj (should-not= nil (numericality {:foo 1.0} :foo {:only-integer true}))
+        (should-not= nil (numericality {:foo 1.1} :foo {:only-integer true})))
 
       (it "returns the is-not-an-int error message upon failure"
-        (should= "some message" (numericality {:foo "1.0"} :foo {:only-integer true :is-not-an-int "some message"})))
+        (should= "some message" (numericality {:foo "1.1"} :foo {:only-integer true :is-not-an-int "some message"})))
 
       )
 
@@ -137,7 +143,8 @@
 
       (it "returns the is-not-greater-than error message upon failure"
         (should= "some 0" (numericality {:foo "0"} :foo {:greater-than 0 :is-not-greater-than "some %d"}))
-        (should= "some 0.0" (numericality {:foo "0"} :foo {:greater-than 0.0 :is-not-greater-than "some %s"})))
+        #+clj (should= "some 0.0" (numericality {:foo "0"} :foo {:greater-than 0.0 :is-not-greater-than "some %s"}))
+        )
 
       )
 
@@ -367,6 +374,7 @@
 
     )
 
+  #+clj
   (context "email"
     (it "passes for valid email"
       (should= nil (email {:foo "snap.into@slim.io"} :foo {}))
@@ -381,6 +389,7 @@
 
     )
 
+  #+clj
   (context "url"
 
     (it "passes for a valid url"
@@ -391,7 +400,7 @@
       (should-be-nil (url {:foo "unknown://google.com/"} :foo {:allow-all-schemes true}))
       (should-be-nil (url {:foo "http://google.com#view=fitb"} :foo {}))
       (should-be-nil (url {:foo "http://localhost/"} :foo {:allow-local-urls true}))
-        )
+      )
 
     (it "fails for an invalid url"
       (should-not-be-nil (url {:foo "unknown://foo.bar.com/"} :foo {}))
@@ -401,4 +410,4 @@
 
     )
 
-)
+  )

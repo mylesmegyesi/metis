@@ -1,8 +1,10 @@
 (ns metis.core-spec
-  (:use
-    [speclj.core :rename {with other-with}]
-    [metis.test-validators]
-    [metis.core]))
+  (#+clj :require #+cljs :require-macros
+                  [speclj.core :refer [describe context it should should= should-not=]]
+                  [metis.core :refer [defvalidator]])
+  (:require [metis.core]
+            [metis.test-validators :refer [foreign]]
+            [speclj.core]))
 
 (defvalidator :generic-record
   [[:first-name :zipcode] [:presence {:allow-blank true}]]
@@ -85,11 +87,13 @@
   (it "can use a validator from a different file"
     (should= 1 (count (:first-name (foreign {})))))
 
+  #+clj
   (it "handles nested maps with no errors"
     (should= {} (person {:first-name "name"
-                         :address {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}
-                         :address1 {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}})))
+                         :address    {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}
+                         :address1   {:line-1 "1" :line-2 "2" :zipcode "64521" :nation {:name "USA" :code 1}}})))
 
+  #+clj
   (it "handles nested maps with errors"
     (should= {:first-name '("must be present") :address1 ["here"] :address {:nation {:name '("must be present"), :code '("must be present")} :zipcode '("must be present"), :line-1 '("must be present") :line-2 '("must be present")}} (person {})))
 

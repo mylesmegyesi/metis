@@ -1,7 +1,7 @@
 (ns metis.util-spec
-  (:use
-    [speclj.core]
-    [metis.util]))
+  (#+clj :require #+cljs :require-macros [speclj.core :refer [describe context it should should-not]])
+  (:require [metis.util :refer [blank?]]
+            [speclj.core]))
 
 (describe "utility functions"
 

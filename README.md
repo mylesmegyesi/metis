@@ -1,13 +1,14 @@
 metis [mee'-tis]
 =============
 
-Metis is a library for data validation in [Clojure](http://clojure.org/) inspired by [Active Record Validations](http://guides.rubyonrails.org/active_record_validations_callbacks.html).
+Metis is a library for data validation in [Clojure or ClojureScript](http://clojure.org/) inspired by [Active Record Validations](http://guides.rubyonrails.org/active_record_validations_callbacks.html).
 
 Validations are used to ensure that the data coming from user input is valid. For example, when a user inputs their email address, it is important to ensure that the email looks like an email (test@test.com).
 
 ## Requirements
 
 * Clojure 1.4+
+
 
 ## Installation
 
@@ -17,16 +18,24 @@ Validations are used to ensure that the data coming from user input is valid. Fo
 
 ## Usage
 
+`validator` is a function that takes a validation spec and returns a function. The validation spec is a DSL that allows you define your validation rules. Let's look at all the possible ways.
+
+```clojure
+(require '[metis.core :refer [validator]])
+
+(def user-validator (validator [:first-name :presence]))
+```
+
 ### Defining a Validator using defvalidator
 
-defvalidator is a macro that allows you to quickly define a validator function. There are many ways to use the defvalidator dsl to define your validation rules. Let's look at all the possible ways.
+`defvalidator` is a macro to create a var that's bound to the validation function.  It taks the same DSL as `validator`.
 
 #### Single Attribute and Single Validator
 
 ##### no options
 
 ```clojure
-(use 'metis.core)
+(require '[metis.core :refer [defvalidator]])
 
 (defvalidator user-validator
   [:first-name :presence])
@@ -243,6 +252,16 @@ Often times, a set of data, say a user's profile, will have multiple forms in an
 
 Note: the context names here are arbitrary; they can be anything.
 
+## ClojureScript
+
+```clojure
+(ns your.ns
+  (:require-macros [metis.core :refer [defvalidator]])
+  (:require [metis.core])
+
+  ...
+```
+
 ## Contributing
 
 Clone the master branch, build, and run all the tests:
@@ -250,8 +269,7 @@ Clone the master branch, build, and run all the tests:
 ``` bash
 git clone git@github.com:mylesmegyesi/metis.git
 cd metis
-lein deps
-lein spec
+lein ci
 ```
 
 Make patches and submit them along with an issue (see below).
