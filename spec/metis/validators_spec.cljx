@@ -100,7 +100,7 @@
 
         )
 
-      (it "fails the the attribute is not a number"
+      (it "fails when the attribute is not a number"
         (should-not= nil (numericality {:foo "asdf"} :foo {}))
         (should= "some message" (numericality {:foo "asdf"} :foo {:is-not-a-number "some message"})))
 
@@ -112,11 +112,13 @@
         (should= nil (numericality {:foo 1} :foo {:only-integer true})))
 
       (it "fails when the number is a float"
-        (should-not= nil (numericality {:foo "1.0"} :foo {:only-integer true}))
-        (should-not= nil (numericality {:foo 1.0} :foo {:only-integer true})))
+        #+clj (should-not= nil (numericality {:foo "1.0"} :foo {:only-integer true}))
+        (should-not= nil (numericality {:foo "1.1"} :foo {:only-integer true}))
+        #+clj (should-not= nil (numericality {:foo 1.0} :foo {:only-integer true}))
+        (should-not= nil (numericality {:foo 1.1} :foo {:only-integer true})))
 
       (it "returns the is-not-an-int error message upon failure"
-        (should= "some message" (numericality {:foo "1.0"} :foo {:only-integer true :is-not-an-int "some message"})))
+        (should= "some message" (numericality {:foo "1.1"} :foo {:only-integer true :is-not-an-int "some message"})))
 
       )
 

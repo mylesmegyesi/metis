@@ -13,16 +13,16 @@
                 if            (fn [attrs] true)}} options
         allow-nil (if allow-absence true allow-nil)
         allow-blank (if allow-absence true allow-blank)
-        only (flatten [only])
-        except (flatten [except])
+        only (set (flatten [only]))
+        except (set (flatten [except]))
         value (attr record)
         if-condition (or (:if options) (fn [attrs] true))
         if-not-condition (or (:if-not options) (fn [attrs] false))]
     (not (or
            (and allow-nil (nil? value))
            (and allow-blank (util/blank? value))
-           (and context (not (empty? only)) (not (util/includes? only context)))
-           (and context (not (empty? except)) (util/includes? except context))
+           (and context (not (empty? only)) (not (only context)))
+           (and context (not (empty? except)) (except context))
            (not (if-condition record))
            (if-not-condition record)))))
 
@@ -36,9 +36,9 @@
       #+cljs (or (js* "eval(~{})" (str "metis.validators." name)) (js* "eval(~{})" name))
       (throw (#+clj Exception. #+cljs js/Error. (str "Cound not find validator " name))))))
 
-(defn- run-validation [map key validator options context]
+(defn- run-validation [map key validate-fn options context]
   (when (should-run? map key options context)
-    (validator map key options)))
+    (validate-fn map key options)))
 
 (defn- run-validations [map key validations context]
   (reduce
@@ -75,14 +75,13 @@
       (if (empty? validations)
         ret
         (let [cur (first validations)
-              next (second validations)]
+              next (second validations)
+              validation (validator-factory cur)
+              ret (conj ret [validation next])]
           (cond
-            (map? next)
-            (recur (rest (rest validations)) (conj ret [(validator-factory cur) next]))
-            (keyword? next)
-            (recur (rest validations) (conj ret [(validator-factory cur) {}]))
-            (nil? next)
-            (recur [] (conj ret [(validator-factory cur) {}]))))))))
+            (map? next) (recur (rest (rest validations)) ret)
+            (keyword? next) (recur (rest validations) ret)
+            (nil? next) (recur [] ret)))))))
 
 (defn -parse
   ([attrs validation args]
